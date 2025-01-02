@@ -1,0 +1,107 @@
+plugins {
+    id 'java-library'
+    id 'checkstyle'
+    id 'maven-publish'
+    id 'jvm-test-suite'
+}
+
+group = 'com.osrs.goal'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // AWS DynamoDB
+    implementation platform('software.amazon.awssdk:bom:2.24.0')
+    implementation 'software.amazon.awssdk:dynamodb'
+    
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+    
+    // Guice
+    implementation 'com.google.inject:guice:7.0.0'
+    
+    // Logging
+    implementation 'org.apache.logging.log4j:log4j-api:2.22.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.22.1'
+}
+
+testing {
+    suites {
+        test {
+            useJUnitJupiter()
+            dependencies {
+                implementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+                implementation 'org.mockito:mockito-core:5.10.0'
+                implementation 'org.mockito:mockito-junit-jupiter:5.10.0'
+                implementation 'org.assertj:assertj-core:3.25.1'
+            }
+        }
+    }
+}
+
+checkstyle {
+    toolVersion = '10.13.0'
+    config = resources.text.fromUri("https://raw.githubusercontent.com/osrsGoalsTracker/java-build-config/refs/heads/main/checkstyle/checkstyle.xml")
+    maxWarnings = 0
+    ignoreFailures = false
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'com.google.guava:guava:33.0.0-jre'
+        exclude group: 'com.google.collections', module: 'google-collections'
+    }
+}
+
+tasks.register('checkGitHooks') {
+    doLast {
+        def projectDir = layout.projectDirectory
+        def hookFile = projectDir.file('.git/hooks/pre-push')
+        def installScript = projectDir.file('scripts/install-hooks.sh')
+
+        if (!hookFile.asFile.exists() || !hookFile.asFile.canExecute()) {
+            logger.info("Git hooks not found or not executable. Installing them now...")
+
+            if (!installScript.asFile.exists()) {
+                throw new GradleException("Cannot find scripts/install-hooks.sh")
+            }
+
+            // Make the install script executable
+            installScript.asFile.setExecutable(true)
+
+            // Execute the install script
+            exec {
+                workingDir = projectDir.asFile
+                commandLine 'sh', installScript.asFile.absolutePath
+                ignoreExitValue = true
+            }.assertNormalExitValue()
+        }
+    }
+}
+
+// Make build task depend on checkGitHooks
+tasks.named('build') {
+    dependsOn tasks.named('checkGitHooks')
+    dependsOn tasks.withType(Checkstyle)
+}
+
+// JitPack configuration
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+} 
