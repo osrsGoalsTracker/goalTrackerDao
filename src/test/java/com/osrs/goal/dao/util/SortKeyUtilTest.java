@@ -25,3 +25,4 @@ class SortKeyUtilTest {
                 .isEqualTo("RSN#METADATA#");
     }
 }
+

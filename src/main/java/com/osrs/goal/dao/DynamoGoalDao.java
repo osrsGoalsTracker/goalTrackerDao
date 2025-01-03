@@ -1,25 +1,29 @@
 package com.osrs.goal.dao;
 
-import com.google.inject.Inject;
-import com.osrs.goal.dao.entity.RsnEntity;
-import com.osrs.goal.dao.entity.UserEntity;
-import com.osrs.goal.dao.exception.ResourceNotFoundException;
-import com.osrs.goal.dao.util.SortKeyUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.google.inject.Inject;
+import com.osrs.goal.dao.entity.RsnEntity;
+import com.osrs.goal.dao.entity.UserEntity;
+import com.osrs.goal.dao.exception.ResourceNotFoundException;
+import com.osrs.goal.dao.util.SortKeyUtil;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 /**
  * DynamoDB implementation of the GoalDao interface.
@@ -42,6 +46,7 @@ public class DynamoGoalDao implements GoalDao {
     private static final String USER_PREFIX = "USER#"; // Prefix for user partition keys
 
     // Entity attribute names in DynamoDB
+    private static final String USER_ID = "userId";
     private static final String EMAIL = "email";
     private static final String RSN = "rsn";
     private static final String CREATED_AT = "createdAt";
@@ -65,8 +70,47 @@ public class DynamoGoalDao implements GoalDao {
     }
 
     @Override
+    public UserEntity createUser(String email) {
+        LOGGER.debug("Creating new user with email: {}", email);
+
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+
+        String userId = UUID.randomUUID().toString();
+        LocalDateTime now = LocalDateTime.now();
+        String timestamp = now.format(DATE_TIME_FORMATTER);
+
+        Map<String, AttributeValue> item = new HashMap<>();
+        item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
+        item.put(SK, AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
+        item.put(USER_ID, AttributeValue.builder().s(userId).build());
+        item.put(EMAIL, AttributeValue.builder().s(email).build());
+        item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
+        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
+
+        PutItemRequest putItemRequest = PutItemRequest.builder()
+                .tableName(TABLE_NAME)
+                .item(item)
+                .build();
+
+        dynamoDbClient.putItem(putItemRequest);
+
+        return UserEntity.builder()
+                .userId(userId)
+                .email(email)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+    }
+
+    @Override
     public UserEntity getUser(String userId) {
         LOGGER.debug("Getting user with ID: {}", userId);
+
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("UserId cannot be null or empty");
+        }
 
         // Construct the composite key for user metadata
         Map<String, AttributeValue> key = new HashMap<>();
@@ -98,6 +142,10 @@ public class DynamoGoalDao implements GoalDao {
     public List<RsnEntity> getRsnsForUser(String userId) {
         LOGGER.debug("Getting RSNs for user with ID: {}", userId);
 
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("UserId cannot be null or empty");
+        }
+
         // Build query to find all RSNs for the user using a begins_with condition on
         // the sort key
         QueryRequest request = QueryRequest.builder()
@@ -110,7 +158,8 @@ public class DynamoGoalDao implements GoalDao {
                 // Define the query parameters
                 .expressionAttributeValues(Map.of(
                         ":pk", AttributeValue.builder().s(USER_PREFIX + userId).build(),
-                        ":sk_prefix", AttributeValue.builder().s(SortKeyUtil.getRsnMetadataPrefix()).build()))
+                        ":sk_prefix",
+                        AttributeValue.builder().s(SortKeyUtil.getRsnMetadataPrefix()).build()))
                 .build();
 
         // Execute query and convert results to RsnEntity objects
@@ -119,9 +168,12 @@ public class DynamoGoalDao implements GoalDao {
                 .map(item -> RsnEntity.builder()
                         .userId(userId)
                         .rsn(item.get(RSN).s())
-                        .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
-                        .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
+                        .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(),
+                                DATE_TIME_FORMATTER))
+                        .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(),
+                                DATE_TIME_FORMATTER))
                         .build())
                 .collect(Collectors.toList());
     }
-}
+} 
+

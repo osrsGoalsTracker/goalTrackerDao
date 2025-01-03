@@ -48,3 +48,4 @@ public class GoalDaoModule extends AbstractModule {
         return DynamoDbClient.builder().build();
     }
 }
+

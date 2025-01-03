@@ -1,9 +1,9 @@
 package com.osrs.goal.dao;
 
+import java.util.List;
+
 import com.osrs.goal.dao.entity.RsnEntity;
 import com.osrs.goal.dao.entity.UserEntity;
-
-import java.util.List;
 
 /**
  * Data Access Object interface for goal tracking operations.
@@ -26,6 +26,18 @@ import java.util.List;
  * - Other runtime exceptions may be thrown for database errors
  */
 public interface GoalDao {
+    /**
+     * Creates a new user in the system.
+     * 
+     * This method creates a new user with the given email address.
+     * A unique user ID will be generated for the new user.
+     *
+     * @param email The email address of the user
+     * @return UserEntity containing the created user's data
+     * @throws IllegalArgumentException if email is null or empty
+     */
+    UserEntity createUser(String email);
+
     /**
      * Retrieves user metadata for the given user ID.
      * 
@@ -52,4 +64,5 @@ public interface GoalDao {
      * @return List of RsnEntity objects, empty list if user has no RSNs
      */
     List<RsnEntity> getRsnsForUser(String userId);
+
 }

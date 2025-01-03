@@ -40,6 +40,18 @@ To find the latest version:
 
 ## Usage
 
+### Managing Users
+```java
+@Inject
+public YourClass(UserDao userDao) {
+    // Create a new user
+    UserEntity newUser = userDao.createUser("user@example.com");
+    
+    // Get user metadata
+    UserEntity user = userDao.getUser(newUser.getUserId());
+}
+```
+
 ### Getting User Data
 
 ```java
@@ -79,6 +91,18 @@ Base entity containing common fields:
 ```
 
 ### Methods
+
+#### createUser
+```java
+/**
+ * Creates a new user in the system.
+ *
+ * @param email The email address of the user
+ * @return UserEntity containing the created user's data
+ * @throws IllegalArgumentException if email is null or empty
+ */
+UserEntity createUser(String email);
+```
 
 #### getUser
 ```java

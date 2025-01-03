@@ -61,3 +61,4 @@ public class RsnEntity extends AbstractEntity {
         return sb.toString();
     }
 }
+
