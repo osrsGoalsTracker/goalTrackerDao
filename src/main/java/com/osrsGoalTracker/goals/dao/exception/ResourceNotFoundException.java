@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.ddb.dao.goals.exception;
+package com.osrsGoalTracker.goals.dao.exception;
 
 /**
  * Exception thrown when a requested resource is not found.

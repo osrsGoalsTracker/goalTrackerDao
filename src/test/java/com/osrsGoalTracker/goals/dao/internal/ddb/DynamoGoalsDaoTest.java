@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.ddb.dao.goals;
+package com.osrsGoalTracker.goals.dao.internal.ddb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import com.osrsGoalTracker.ddb.dao.goals.entity.UserEntity;
-import com.osrsGoalTracker.ddb.dao.goals.exception.ResourceNotFoundException;
-import com.osrsGoalTracker.ddb.dao.goals.util.SortKeyUtil;
+import com.osrsGoalTracker.goals.dao.entity.UserEntity;
+import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.goals.dao.internal.ddb.util.SortKeyUtil;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

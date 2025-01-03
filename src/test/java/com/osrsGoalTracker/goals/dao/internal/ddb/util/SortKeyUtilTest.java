@@ -1,8 +1,7 @@
-package com.osrsGoalTracker.ddb.dao.goals.util;
-
-import org.junit.jupiter.api.Test;
+package com.osrsGoalTracker.goals.dao.internal.ddb.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class SortKeyUtilTest {
     private static final String TEST_RSN = "testRsn";
@@ -25,4 +24,3 @@ class SortKeyUtilTest {
                 .isEqualTo("RSN#METADATA#");
     }
 }
-

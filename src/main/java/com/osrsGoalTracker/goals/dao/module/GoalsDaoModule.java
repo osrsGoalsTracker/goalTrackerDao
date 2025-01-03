@@ -1,10 +1,10 @@
-package com.osrsGoalTracker.ddb.dao.goals.module;
+package com.osrsGoalTracker.goals.dao.module;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 
-import com.osrsGoalTracker.ddb.dao.goals.DynamoGoalsDao;
-import com.osrsGoalTracker.ddb.dao.goals.GoalsDao;
+import com.osrsGoalTracker.goals.dao.GoalsDao;
+import com.osrsGoalTracker.goals.dao.internal.ddb.DynamoGoalsDao;
 
 /**
  * Guice module for configuring dependency injection.

@@ -42,6 +42,10 @@ To find the latest version:
 
 ### Managing Users
 ```java
+import com.osrsGoalTracker.goals.dao.GoalsDao;
+import com.osrsGoalTracker.goals.dao.entity.UserEntity;
+import com.osrsGoalTracker.goals.dao.entity.RsnEntity;
+
 @Inject
 public YourClass(GoalsDao goalsDao) {
     // Create a new user
@@ -61,13 +65,15 @@ public YourClass(GoalsDao goalsDao) {
 
 The library is organized under the following package structure:
 ```
-com.osrsGoalTracker.ddb.dao.goals
-├── entity/           # Entity classes (UserEntity, RsnEntity)
-├── exception/        # Custom exceptions
-├── module/          # Guice modules for dependency injection
-├── util/            # Utility classes
-├── GoalsDao         # Main interface
-└── DynamoGoalsDao   # DynamoDB implementation
+com.osrsGoalTracker.goals.dao
+├── GoalsDao.java         # Main interface
+├── entity/              # Public entity classes (UserEntity, RsnEntity)
+├── exception/           # Public exceptions
+├── module/             # Guice modules for dependency injection
+└── internal/           # Implementation details (not for client use)
+    └── ddb/
+        ├── DynamoGoalsDao.java
+        └── util/        # Internal utilities
 ```
 
 ### Entities
@@ -135,8 +141,8 @@ List<RsnEntity> getRsnsForUser(String userId);
 The library uses Guice for dependency injection. To use it in your application:
 
 ```java
-import com.osrsGoalTracker.ddb.dao.goals.GoalsDao;
-import com.osrsGoalTracker.ddb.dao.goals.module.GoalsDaoModule;
+import com.osrsGoalTracker.goals.dao.GoalsDao;
+import com.osrsGoalTracker.goals.dao.module.GoalsDaoModule;
 
 // Create injector with the GoalsDaoModule
 Injector injector = Guice.createInjector(new GoalsDaoModule());

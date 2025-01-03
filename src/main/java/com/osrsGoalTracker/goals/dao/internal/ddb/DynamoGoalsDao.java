@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.ddb.dao.goals;
+package com.osrsGoalTracker.goals.dao.internal.ddb;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,10 +9,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.inject.Inject;
-import com.osrsGoalTracker.ddb.dao.goals.entity.RsnEntity;
-import com.osrsGoalTracker.ddb.dao.goals.entity.UserEntity;
-import com.osrsGoalTracker.ddb.dao.goals.exception.ResourceNotFoundException;
-import com.osrsGoalTracker.ddb.dao.goals.util.SortKeyUtil;
+import com.osrsGoalTracker.goals.dao.GoalsDao;
+import com.osrsGoalTracker.goals.dao.entity.RsnEntity;
+import com.osrsGoalTracker.goals.dao.entity.UserEntity;
+import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.goals.dao.internal.ddb.util.SortKeyUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,18 +91,18 @@ public class DynamoGoalsDao implements GoalsDao {
         item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
 
         PutItemRequest putItemRequest = PutItemRequest.builder()
-            .tableName(TABLE_NAME)
-            .item(item)
-            .build();
+                .tableName(TABLE_NAME)
+                .item(item)
+                .build();
 
         dynamoDbClient.putItem(putItemRequest);
 
         return UserEntity.builder()
-            .userId(userId)
-            .email(email)
-            .createdAt(now)
-            .updatedAt(now)
-            .build();
+                .userId(userId)
+                .email(email)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
     }
 
     @Override
@@ -119,9 +120,9 @@ public class DynamoGoalsDao implements GoalsDao {
 
         // Build and execute the GetItem request
         GetItemRequest request = GetItemRequest.builder()
-            .tableName(TABLE_NAME)
-            .key(key)
-            .build();
+                .tableName(TABLE_NAME)
+                .key(key)
+                .build();
 
         GetItemResponse response = dynamoDbClient.getItem(request);
         if (!response.hasItem()) {
@@ -131,11 +132,11 @@ public class DynamoGoalsDao implements GoalsDao {
         // Convert DynamoDB item to UserEntity
         Map<String, AttributeValue> item = response.item();
         return UserEntity.builder()
-            .userId(userId)
-            .email(item.get(EMAIL).s())
-            .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
-            .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
-            .build();
+                .userId(userId)
+                .email(item.get(EMAIL).s())
+                .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
+                .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
+                .build();
     }
 
     @Override
@@ -149,30 +150,30 @@ public class DynamoGoalsDao implements GoalsDao {
         // Build query to find all RSNs for the user using a begins_with condition on
         // the sort key
         QueryRequest request = QueryRequest.builder()
-            .tableName(TABLE_NAME)
-            .keyConditionExpression("#pk = :pk AND begins_with(#sk, :sk_prefix)")
-            // Use expression attribute names to avoid reserved word conflicts
-            .expressionAttributeNames(Map.of(
-                "#pk", PK,
-                "#sk", SK))
-            // Define the query parameters
-            .expressionAttributeValues(Map.of(
-                ":pk", AttributeValue.builder().s(USER_PREFIX + userId).build(),
-                ":sk_prefix",
-                AttributeValue.builder().s(SortKeyUtil.getRsnMetadataPrefix()).build()))
-            .build();
+                .tableName(TABLE_NAME)
+                .keyConditionExpression("#pk = :pk AND begins_with(#sk, :sk_prefix)")
+                // Use expression attribute names to avoid reserved word conflicts
+                .expressionAttributeNames(Map.of(
+                        "#pk", PK,
+                        "#sk", SK))
+                // Define the query parameters
+                .expressionAttributeValues(Map.of(
+                        ":pk", AttributeValue.builder().s(USER_PREFIX + userId).build(),
+                        ":sk_prefix",
+                        AttributeValue.builder().s(SortKeyUtil.getRsnMetadataPrefix()).build()))
+                .build();
 
         // Execute query and convert results to RsnEntity objects
         QueryResponse response = dynamoDbClient.query(request);
         return response.items().stream()
-            .map(item -> RsnEntity.builder()
-                .userId(userId)
-                .rsn(item.get(RSN).s())
-                .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(),
-                    DATE_TIME_FORMATTER))
-                .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(),
-                    DATE_TIME_FORMATTER))
-                .build())
-            .collect(Collectors.toList());
+                .map(item -> RsnEntity.builder()
+                        .userId(userId)
+                        .rsn(item.get(RSN).s())
+                        .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(),
+                                DATE_TIME_FORMATTER))
+                        .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(),
+                                DATE_TIME_FORMATTER))
+                        .build())
+                .collect(Collectors.toList());
     }
-} 
+}

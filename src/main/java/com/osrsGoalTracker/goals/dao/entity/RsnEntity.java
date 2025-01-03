@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.ddb.dao.goals.entity;
+package com.osrsGoalTracker.goals.dao.entity;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
