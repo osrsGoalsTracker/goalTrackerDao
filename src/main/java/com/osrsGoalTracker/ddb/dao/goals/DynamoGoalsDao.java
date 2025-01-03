@@ -26,8 +26,8 @@ import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 /**
- * DynamoDB implementation of the GoalDao interface.
- * Handles all DynamoDB operations for goal tracking data.
+ * DynamoDB implementation of the GoalsDao interface.
+ * Handles all DynamoDB operations for goals tracking data.
  * 
  * This implementation uses a single-table design with composite keys:
  * - Partition Key (PK): USER#userId
@@ -35,9 +35,9 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
  * - User metadata: METADATA
  * - RSN metadata: RSN#METADATA#rsn
  */
-public class DynamoGoalDao implements GoalDao {
+public class DynamoGoalsDao implements GoalsDao {
     // Logger instance for this class
-    private static final Logger LOGGER = LogManager.getLogger(DynamoGoalDao.class);
+    private static final Logger LOGGER = LogManager.getLogger(DynamoGoalsDao.class);
 
     // DynamoDB table and attribute names
     private static final String TABLE_NAME = "Goals";
@@ -59,13 +59,13 @@ public class DynamoGoalDao implements GoalDao {
     private final DynamoDbClient dynamoDbClient;
 
     /**
-     * Constructor for DynamoGoalDao.
+     * Constructor for DynamoGoalsDao.
      * Uses Guice for dependency injection of the DynamoDB client.
      *
      * @param dynamoDbClient The AWS DynamoDB client
      */
     @Inject
-    public DynamoGoalDao(DynamoDbClient dynamoDbClient) {
+    public DynamoGoalsDao(DynamoDbClient dynamoDbClient) {
         this.dynamoDbClient = dynamoDbClient;
     }
 
@@ -90,18 +90,18 @@ public class DynamoGoalDao implements GoalDao {
         item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
 
         PutItemRequest putItemRequest = PutItemRequest.builder()
-                .tableName(TABLE_NAME)
-                .item(item)
-                .build();
+            .tableName(TABLE_NAME)
+            .item(item)
+            .build();
 
         dynamoDbClient.putItem(putItemRequest);
 
         return UserEntity.builder()
-                .userId(userId)
-                .email(email)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+            .userId(userId)
+            .email(email)
+            .createdAt(now)
+            .updatedAt(now)
+            .build();
     }
 
     @Override
@@ -119,9 +119,9 @@ public class DynamoGoalDao implements GoalDao {
 
         // Build and execute the GetItem request
         GetItemRequest request = GetItemRequest.builder()
-                .tableName(TABLE_NAME)
-                .key(key)
-                .build();
+            .tableName(TABLE_NAME)
+            .key(key)
+            .build();
 
         GetItemResponse response = dynamoDbClient.getItem(request);
         if (!response.hasItem()) {
@@ -131,11 +131,11 @@ public class DynamoGoalDao implements GoalDao {
         // Convert DynamoDB item to UserEntity
         Map<String, AttributeValue> item = response.item();
         return UserEntity.builder()
-                .userId(userId)
-                .email(item.get(EMAIL).s())
-                .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
-                .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
-                .build();
+            .userId(userId)
+            .email(item.get(EMAIL).s())
+            .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
+            .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
+            .build();
     }
 
     @Override
@@ -149,31 +149,30 @@ public class DynamoGoalDao implements GoalDao {
         // Build query to find all RSNs for the user using a begins_with condition on
         // the sort key
         QueryRequest request = QueryRequest.builder()
-                .tableName(TABLE_NAME)
-                .keyConditionExpression("#pk = :pk AND begins_with(#sk, :sk_prefix)")
-                // Use expression attribute names to avoid reserved word conflicts
-                .expressionAttributeNames(Map.of(
-                        "#pk", PK,
-                        "#sk", SK))
-                // Define the query parameters
-                .expressionAttributeValues(Map.of(
-                        ":pk", AttributeValue.builder().s(USER_PREFIX + userId).build(),
-                        ":sk_prefix",
-                        AttributeValue.builder().s(SortKeyUtil.getRsnMetadataPrefix()).build()))
-                .build();
+            .tableName(TABLE_NAME)
+            .keyConditionExpression("#pk = :pk AND begins_with(#sk, :sk_prefix)")
+            // Use expression attribute names to avoid reserved word conflicts
+            .expressionAttributeNames(Map.of(
+                "#pk", PK,
+                "#sk", SK))
+            // Define the query parameters
+            .expressionAttributeValues(Map.of(
+                ":pk", AttributeValue.builder().s(USER_PREFIX + userId).build(),
+                ":sk_prefix",
+                AttributeValue.builder().s(SortKeyUtil.getRsnMetadataPrefix()).build()))
+            .build();
 
         // Execute query and convert results to RsnEntity objects
         QueryResponse response = dynamoDbClient.query(request);
         return response.items().stream()
-                .map(item -> RsnEntity.builder()
-                        .userId(userId)
-                        .rsn(item.get(RSN).s())
-                        .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(),
-                                DATE_TIME_FORMATTER))
-                        .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(),
-                                DATE_TIME_FORMATTER))
-                        .build())
-                .collect(Collectors.toList());
+            .map(item -> RsnEntity.builder()
+                .userId(userId)
+                .rsn(item.get(RSN).s())
+                .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(),
+                    DATE_TIME_FORMATTER))
+                .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(),
+                    DATE_TIME_FORMATTER))
+                .build())
+            .collect(Collectors.toList());
     }
 } 
-

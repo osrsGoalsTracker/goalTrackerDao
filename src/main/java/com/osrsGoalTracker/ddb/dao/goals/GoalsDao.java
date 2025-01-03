@@ -6,7 +6,7 @@ import com.osrsGoalTracker.ddb.dao.goals.entity.RsnEntity;
 import com.osrsGoalTracker.ddb.dao.goals.entity.UserEntity;
 
 /**
- * Data Access Object interface for goal tracking operations.
+ * Data Access Object interface for goals tracking operations.
  * Provides methods to interact with user and RSN data.
  * 
  * This interface abstracts the underlying data store implementation,
@@ -18,14 +18,14 @@ import com.osrsGoalTracker.ddb.dao.goals.entity.UserEntity;
  * 
  * Thread Safety:
  * Implementations of this interface should be thread-safe.
- * The default implementation (DynamoGoalDao) is thread-safe.
+ * The default implementation (DynamoGoalsDao) is thread-safe.
  * 
  * Error Handling:
  * - Methods may throw ResourceNotFoundException when requested data doesn't
  * exist
  * - Other runtime exceptions may be thrown for database errors
  */
-public interface GoalDao {
+public interface GoalsDao {
     /**
      * Creates a new user in the system.
      * 
@@ -64,5 +64,4 @@ public interface GoalDao {
      * @return List of RsnEntity objects, empty list if user has no RSNs
      */
     List<RsnEntity> getRsnsForUser(String userId);
-
 }

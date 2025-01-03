@@ -1,4 +1,4 @@
-# Goal DAO Library
+# Goals DAO Library
 
 A Java library for interacting with DynamoDB to manage OSRS goal tracking data. This library provides a clean abstraction over DynamoDB operations, handling the complexities of partition keys and sort keys internally.
 
@@ -29,12 +29,12 @@ Then, add the dependency. Replace `Tag` with a specific version tag, commit hash
 
 ```groovy
 dependencies {
-    implementation 'com.github.osrsGoalsTracker:goalDao:Tag'
+    implementation 'com.github.osrsGoalsTracker:goalsDao:Tag'
 }
 ```
 
 To find the latest version:
-1. Visit [JitPack - goalDao](https://jitpack.io/#osrsGoalsTracker/goalDao)
+1. Visit [JitPack - goalsDao](https://jitpack.io/#osrsGoalsTracker/goalsDao)
 2. Click "Get it" on the version you want to use
 3. Copy the version tag from the dependency snippet
 
@@ -43,29 +43,32 @@ To find the latest version:
 ### Managing Users
 ```java
 @Inject
-public YourClass(UserDao userDao) {
+public YourClass(GoalsDao goalsDao) {
     // Create a new user
-    UserEntity newUser = userDao.createUser("user@example.com");
+    UserEntity newUser = goalsDao.createUser("user@example.com");
     
     // Get user metadata
-    UserEntity user = userDao.getUser(newUser.getUserId());
-}
-```
-
-### Getting User Data
-
-```java
-@Inject
-public YourClass(GoalDao goalDao) {
-    // Get user metadata
-    UserEntity user = goalDao.getUser("userId");
+    UserEntity user = goalsDao.getUser(newUser.getUserId());
     
     // Get list of RSNs for user
-    List<RsnEntity> rsns = goalDao.getRsnsForUser("userId");
+    List<RsnEntity> rsns = goalsDao.getRsnsForUser(newUser.getUserId());
 }
 ```
 
 ## API Reference
+
+### Package Structure
+
+The library is organized under the following package structure:
+```
+com.osrsGoalTracker.ddb.dao.goals
+├── entity/           # Entity classes (UserEntity, RsnEntity)
+├── exception/        # Custom exceptions
+├── module/          # Guice modules for dependency injection
+├── util/            # Utility classes
+├── GoalsDao         # Main interface
+└── DynamoGoalsDao   # DynamoDB implementation
+```
 
 ### Entities
 
@@ -125,6 +128,21 @@ UserEntity getUser(String userId);
  * @return List of RsnEntity objects, empty list if user has no RSNs
  */
 List<RsnEntity> getRsnsForUser(String userId);
+```
+
+### Dependency Injection
+
+The library uses Guice for dependency injection. To use it in your application:
+
+```java
+import com.osrsGoalTracker.ddb.dao.goals.GoalsDao;
+import com.osrsGoalTracker.ddb.dao.goals.module.GoalsDaoModule;
+
+// Create injector with the GoalsDaoModule
+Injector injector = Guice.createInjector(new GoalsDaoModule());
+
+// Get an instance of GoalsDao
+GoalsDao goalsDao = injector.getInstance(GoalsDao.class);
 ```
 
 ## Development
