@@ -26,3 +26,5 @@
 19. We will frequently use partial sort keys to access data efficiently. If you are ever confused about how to easily access data, check the DDB_SCHEMA.md file. If that does not answer your question, stop and ask me to clarify
 
 20. Always write tests and maintain an updated README.md documenting the library function definitions + the shapes of the returned entities.
+
+21. Always ensure that local builds of the code are exactly how it will be built in JitPack.
