@@ -2,4 +2,7 @@ jdk:
   - openjdk21
 before_install:
   - sdk install java 21.0.1-tem
-  - sdk use java 21.0.1-tem 
+  - sdk use java 21.0.1-tem
+  - wget https://services.gradle.org/distributions/gradle-8.5-bin.zip
+  - unzip -d /opt/gradle gradle-8.5-bin.zip
+  - export PATH=/opt/gradle/gradle-8.5/bin:$PATH 
