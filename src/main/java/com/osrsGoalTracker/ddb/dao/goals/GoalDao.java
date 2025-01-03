@@ -1,9 +1,9 @@
-package com.osrs.goal.dao;
+package com.osrsGoalTracker.ddb.dao.goals;
 
 import java.util.List;
 
-import com.osrs.goal.dao.entity.RsnEntity;
-import com.osrs.goal.dao.entity.UserEntity;
+import com.osrsGoalTracker.ddb.dao.goals.entity.RsnEntity;
+import com.osrsGoalTracker.ddb.dao.goals.entity.UserEntity;
 
 /**
  * Data Access Object interface for goal tracking operations.

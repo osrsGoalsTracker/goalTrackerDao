@@ -1,4 +1,4 @@
-package com.osrs.goal.dao.util;
+package com.osrsGoalTracker.ddb.dao.goals.util;
 
 /**
  * Utility class for constructing DynamoDB sort keys.

@@ -1,4 +1,4 @@
-package com.osrs.goal.dao;
+package com.osrsGoalTracker.ddb.dao.goals;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,10 +9,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.inject.Inject;
-import com.osrs.goal.dao.entity.RsnEntity;
-import com.osrs.goal.dao.entity.UserEntity;
-import com.osrs.goal.dao.exception.ResourceNotFoundException;
-import com.osrs.goal.dao.util.SortKeyUtil;
+import com.osrsGoalTracker.ddb.dao.goals.entity.RsnEntity;
+import com.osrsGoalTracker.ddb.dao.goals.entity.UserEntity;
+import com.osrsGoalTracker.ddb.dao.goals.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.ddb.dao.goals.util.SortKeyUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

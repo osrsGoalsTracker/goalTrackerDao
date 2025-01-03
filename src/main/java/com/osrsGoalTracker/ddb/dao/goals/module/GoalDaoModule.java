@@ -1,10 +1,10 @@
-package com.osrs.goal.dao.module;
+package com.osrsGoalTracker.ddb.dao.goals.module;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.osrs.goal.dao.DynamoGoalDao;
-import com.osrs.goal.dao.GoalDao;
+import com.osrsGoalTracker.ddb.dao.goals.DynamoGoalDao;
+import com.osrsGoalTracker.ddb.dao.goals.GoalDao;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 /**
