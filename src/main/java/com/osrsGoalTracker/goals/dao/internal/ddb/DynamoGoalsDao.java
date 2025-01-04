@@ -120,7 +120,7 @@ public class DynamoGoalsDao implements GoalsDao {
 
     @Override
     public UserEntity getUser(String userId) {
-        LOGGER.debug("Getting user with ID: {}", userId);
+        LOGGER.debug("Getting the user with ID: {}", userId);
 
         if (userId == null || userId.trim().isEmpty()) {
             throw new IllegalArgumentException("UserId cannot be null or empty");
