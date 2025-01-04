@@ -49,7 +49,11 @@ import com.osrsGoalTracker.goals.dao.entity.RsnEntity;
 @Inject
 public YourClass(GoalsDao goalsDao) {
     // Create a new user
-    UserEntity newUser = goalsDao.createUser("user@example.com");
+    UserEntity userToCreate = UserEntity.builder()
+        .userId("uniqueId")
+        .email("user@example.com")
+        .build();
+    UserEntity newUser = goalsDao.createUser(userToCreate);
     
     // Get user metadata
     UserEntity user = goalsDao.getUser(newUser.getUserId());
@@ -106,12 +110,17 @@ Base entity containing common fields:
 /**
  * Creates a new user in the system.
  *
- * @param email The email address of the user
+ * @param user The UserEntity containing the user data to create
  * @return UserEntity containing the created user's data
- * @throws IllegalArgumentException if email is null or empty
+ * @throws IllegalArgumentException if user is null, or if userId or email is null or empty
+ * @throws DuplicateUserException if a user with the same ID already exists
  */
-UserEntity createUser(String email);
+UserEntity createUser(UserEntity user);
 ```
+
+Required fields for UserEntity when creating a user:
+- userId: String (non-null, non-empty)
+- email: String (non-null, non-empty)
 
 #### getUser
 ```java
@@ -120,6 +129,7 @@ UserEntity createUser(String email);
  *
  * @param userId The unique identifier of the user
  * @return UserEntity containing user metadata
+ * @throws IllegalArgumentException if userId is null or empty
  * @throws ResourceNotFoundException if user doesn't exist
  */
 UserEntity getUser(String userId);
@@ -132,6 +142,7 @@ UserEntity getUser(String userId);
  *
  * @param userId The unique identifier of the user
  * @return List of RsnEntity objects, empty list if user has no RSNs
+ * @throws IllegalArgumentException if userId is null or empty
  */
 List<RsnEntity> getRsnsForUser(String userId);
 ```

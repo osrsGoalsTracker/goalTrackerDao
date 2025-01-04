@@ -1,10 +1,8 @@
 package com.osrsGoalTracker.goals.dao.internal.ddb;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,140 +10,148 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import com.osrsGoalTracker.goals.dao.entity.UserEntity;
-import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
-import com.osrsGoalTracker.goals.dao.internal.ddb.util.SortKeyUtil;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.osrsGoalTracker.goals.dao.entity.UserEntity;
+import com.osrsGoalTracker.goals.dao.exception.DuplicateUserException;
+import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
-/**
- * Unit tests for DynamoGoalsDao.
- * Tests the DAO's interaction with DynamoDB for user operations.
- */
+@ExtendWith(MockitoExtension.class)
 class DynamoGoalsDaoTest {
-    private static final String TABLE_NAME = "Goals";
-    private static final String USER_PREFIX = "USER#";
+
+    private static final String TEST_USER_ID = "testUser123";
+    private static final String TEST_EMAIL = "test@example.com";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
+    @Mock
     private DynamoDbClient dynamoDbClient;
+
+    @Captor
+    private ArgumentCaptor<PutItemRequest> putItemRequestCaptor;
+
+    @Captor
+    private ArgumentCaptor<GetItemRequest> getItemRequestCaptor;
+
     private DynamoGoalsDao goalsDao;
 
     @BeforeEach
     void setUp() {
-        dynamoDbClient = mock(DynamoDbClient.class);
         goalsDao = new DynamoGoalsDao(dynamoDbClient);
     }
 
     @Test
-    void testCreateUserWithValidEmail() {
+    void testCreateUserSuccess() {
         // Given
-        String email = "test@example.com";
-
-        // When
-        UserEntity result = goalsDao.createUser(email);
-
-        // Then
-        assertNotNull(result);
-        assertEquals(email, result.getEmail());
-        assertNotNull(result.getUserId());
-        assertNotNull(result.getCreatedAt());
-        assertNotNull(result.getUpdatedAt());
-
-        // Verify DynamoDB interaction
-        ArgumentCaptor<PutItemRequest> requestCaptor = ArgumentCaptor.forClass(PutItemRequest.class);
-        verify(dynamoDbClient).putItem(requestCaptor.capture());
-
-        PutItemRequest request = requestCaptor.getValue();
-        assertEquals(TABLE_NAME, request.tableName());
-
-        Map<String, AttributeValue> item = request.item();
-        assertNotNull(item.get("PK"));
-        assertEquals(SortKeyUtil.getUserMetadataSortKey(), item.get("SK").s());
-        assertEquals(email, item.get("email").s());
-        assertNotNull(item.get("createdAt"));
-        assertNotNull(item.get("updatedAt"));
-    }
-
-    @Test
-    void testCreateUserWithNullEmail() {
-        assertThrows(IllegalArgumentException.class, () -> goalsDao.createUser(null));
-    }
-
-    @Test
-    void testCreateUserWithEmptyEmail() {
-        assertThrows(IllegalArgumentException.class, () -> goalsDao.createUser(""));
-    }
-
-    @Test
-    void testGetExistingUser() {
-        // Given
-        String userId = "testUserId";
-        String email = "test@example.com";
-        LocalDateTime now = LocalDateTime.now();
-        String timestamp = now.format(DATE_TIME_FORMATTER);
-
-        Map<String, AttributeValue> item = Map.of(
-                "PK", AttributeValue.builder().s(USER_PREFIX + userId).build(),
-                "SK", AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build(),
-                "userId", AttributeValue.builder().s(userId).build(),
-                "email", AttributeValue.builder().s(email).build(),
-                "createdAt", AttributeValue.builder().s(timestamp).build(),
-                "updatedAt", AttributeValue.builder().s(timestamp).build());
-
-        GetItemResponse response = GetItemResponse.builder()
-                .item(item)
+        UserEntity userToCreate = UserEntity.builder()
+                .userId(TEST_USER_ID)
+                .email(TEST_EMAIL)
                 .build();
 
-        when(dynamoDbClient.getItem(any(GetItemRequest.class))).thenReturn(response);
-
         // When
-        UserEntity result = goalsDao.getUser(userId);
+        UserEntity createdUser = goalsDao.createUser(userToCreate);
 
         // Then
-        assertNotNull(result);
-        assertEquals(userId, result.getUserId());
-        assertEquals(email, result.getEmail());
-        assertEquals(now.format(DATE_TIME_FORMATTER),
-                result.getCreatedAt().format(DATE_TIME_FORMATTER));
-        assertEquals(now.format(DATE_TIME_FORMATTER),
-                result.getUpdatedAt().format(DATE_TIME_FORMATTER));
+        verify(dynamoDbClient).putItem(putItemRequestCaptor.capture());
+        PutItemRequest capturedRequest = putItemRequestCaptor.getValue();
 
-        // Verify DynamoDB interaction
-        ArgumentCaptor<GetItemRequest> requestCaptor = ArgumentCaptor.forClass(GetItemRequest.class);
-        verify(dynamoDbClient).getItem(requestCaptor.capture());
+        assertThat(capturedRequest.tableName()).isEqualTo("Goals");
 
-        GetItemRequest request = requestCaptor.getValue();
-        assertEquals(TABLE_NAME, request.tableName());
-        assertEquals(USER_PREFIX + userId, request.key().get("PK").s());
-        assertEquals(SortKeyUtil.getUserMetadataSortKey(), request.key().get("SK").s());
+        Map<String, AttributeValue> item = capturedRequest.item();
+        assertThat(item.get("PK").s()).isEqualTo("USER#" + TEST_USER_ID);
+        assertThat(item.get("SK").s()).isEqualTo("METADATA");
+        assertThat(item.get("id").s()).isEqualTo(TEST_USER_ID);
+        assertThat(item.get("email").s()).isEqualTo(TEST_EMAIL);
+        assertThat(item.get("createdAt").s()).isNotEmpty();
+        assertThat(item.get("updatedAt").s()).isNotEmpty();
+
+        assertThat(createdUser.getUserId()).isEqualTo(TEST_USER_ID);
+        assertThat(createdUser.getEmail()).isEqualTo(TEST_EMAIL);
+        assertThat(createdUser.getCreatedAt()).isNotNull();
+        assertThat(createdUser.getUpdatedAt()).isNotNull();
     }
 
     @Test
-    void testGetNonExistentUser() {
+    void testCreateUserDuplicateUser() {
         // Given
-        String userId = "nonExistentUser";
+        UserEntity userToCreate = UserEntity.builder()
+                .userId(TEST_USER_ID)
+                .email(TEST_EMAIL)
+                .build();
+
+        when(dynamoDbClient.putItem(any(PutItemRequest.class)))
+                .thenThrow(ConditionalCheckFailedException.class);
+
+        // Then
+        assertThatThrownBy(() -> goalsDao.createUser(userToCreate))
+                .isInstanceOf(DuplicateUserException.class)
+                .hasMessageContaining(TEST_USER_ID);
+    }
+
+    @Test
+    void testCreateUserNull() {
+        assertThatThrownBy(() -> goalsDao.createUser(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null");
+    }
+
+    @Test
+    void testGetUserSuccess() {
+        // Given
+        LocalDateTime now = LocalDateTime.now();
+        Map<String, AttributeValue> item = Map.of(
+                "id", AttributeValue.builder().s(TEST_USER_ID).build(),
+                "email", AttributeValue.builder().s(TEST_EMAIL).build(),
+                "createdAt", AttributeValue.builder().s(now.format(DATE_TIME_FORMATTER)).build(),
+                "updatedAt", AttributeValue.builder().s(now.format(DATE_TIME_FORMATTER)).build());
+
+        when(dynamoDbClient.getItem(any(GetItemRequest.class)))
+                .thenReturn(GetItemResponse.builder().item(item).build());
+
+        // When
+        UserEntity user = goalsDao.getUser(TEST_USER_ID);
+
+        // Then
+        verify(dynamoDbClient).getItem(getItemRequestCaptor.capture());
+        GetItemRequest capturedRequest = getItemRequestCaptor.getValue();
+
+        assertThat(capturedRequest.key().get("PK").s()).isEqualTo("USER#" + TEST_USER_ID);
+        assertThat(capturedRequest.key().get("SK").s()).isEqualTo("METADATA");
+
+        assertThat(user.getUserId()).isEqualTo(TEST_USER_ID);
+        assertThat(user.getEmail()).isEqualTo(TEST_EMAIL);
+        assertThat(user.getCreatedAt()).isEqualTo(now);
+        assertThat(user.getUpdatedAt()).isEqualTo(now);
+    }
+
+    @Test
+    void testGetUserNotFound() {
+        // Given
         when(dynamoDbClient.getItem(any(GetItemRequest.class)))
                 .thenReturn(GetItemResponse.builder().build());
 
         // Then
-        assertThrows(ResourceNotFoundException.class, () -> goalsDao.getUser(userId));
+        assertThatThrownBy(() -> goalsDao.getUser(TEST_USER_ID))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining(TEST_USER_ID);
     }
 
     @Test
-    void testGetUserWithNullId() {
-        assertThrows(IllegalArgumentException.class, () -> goalsDao.getUser(null));
-    }
-
-    @Test
-    void testGetUserWithEmptyId() {
-        assertThrows(IllegalArgumentException.class, () -> goalsDao.getUser(""));
+    void testGetUserNull() {
+        assertThatThrownBy(() -> goalsDao.getUser(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null");
     }
 }

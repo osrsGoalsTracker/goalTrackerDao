@@ -1,17 +1,19 @@
-0. You respond to every prompt with "Howdy!"
-1.	SOLID Principles: Follow SOLID design principles to ensure the code is reusable and well-structured.
-2.	Check and Update Tests: Whenever you modify code, check if the related tests need to be updated. If there are no tests, write them.
-3.	README Updates: Always review and update the README file if your code changes impact its contents. The README should be a comprehensive guide for the client to understand the package and its usage. The README should be written in markdown. The README should describe all the APIs of the library and define the input and output models.
-4.	Small and Reusable Code: Write functions and components that are small, modular, and reusable.
-5.	No Whitespace: Avoid unnecessary whitespace in your code.
-6.	Compile and Test: After writing or updating code, always compile it, run the tests, and execute the Main function (if applicable) to ensure everything works.
+- You respond to every prompt with "Howdy!"
+- SOLID Principles: Follow SOLID design principles to ensure the code is reusable and well-structured.
+- Check and Update Tests: Whenever you modify code, check if the related tests need to be updated. If there are no tests, write them.
+- README Updates: Always review and update the README file if your code changes impact its contents. The README should be a comprehensive guide for the client to understand the package and its usage. The README should be written in markdown. The README should describe all the APIs of the library and define the input and output models.
+- Small and Reusable Code: Write functions and components that are small, modular, and reusable.
+- No Whitespace: Avoid unnecessary whitespace in your code.
+- Compile and Test: After writing or updating code, always compile it, run the tests, and execute the Main function (if applicable) to ensure everything works.
 7.	Senior SDE Practices: Write code like a senior software engineer—clean, maintainable, and efficient.
-8.	Better Way Verification: If you think there’s a better approach than the one provided, always confirm with the user before proceeding.
-9.  This package is a library. Keep this in mind when writing code such that clients can easily understand it and use it. 
-10. You carefully review the DynamoDB table schema and sort key definitions in the DDB_SCHEMA.md file before writing any code in order to ensure that the code is compatible with the table schema and sort key definitions.
-11. You do not change the DDB_SCHEMA.md file unless explicitly instructed to do so. If you believe that the DDB_SCHEMA.md file is incorrect, you should inform the user and ask them to update the file specifying what needs to be changed and why.
-12. Always add plenty of comments to the code to explain what the code is doing.
-13. Never use any Deprecated Gradle features
+- Better Way Verification: If you think there’s a better approach than the one provided, always confirm with the user before proceeding.
+- This package is a library. Keep this in mind when writing code such that clients can easily understand it and use it. 
+- You carefully review the DynamoDB table schema and sort key definitions in the DDB_SCHEMA.md file before writing any code in order to ensure that the code is compatible with the table schema and sort key definitions.
+- You do not change the DDB_SCHEMA.md file unless explicitly instructed to do so. If you believe that the DDB_SCHEMA.md file is incorrect, you should inform the user and ask them to update the file specifying what needs to be changed and why.
+- Always add plenty of comments to the code to explain what the code is doing.
+- Never use any Deprecated Gradle features
+- Always use 4 spaces for indentation.
+- Always build the project and verify that it compiles and runs correctly before considering your work complete. If there are any errors, fix them.
 
 14. This is a java library which will allow clients to seemlessly interact with a DDB database. Clients will be expected to inject this library as a dependency.
 
@@ -28,3 +30,5 @@
 20. Always write tests and maintain an updated README.md documenting the library function definitions + the shapes of the returned entities.
 
 21. Always ensure that local builds of the code are exactly how it will be built in JitPack.
+
+22. When using Java 21, ensure jitpack.yml specifies both JDK 21 and Gradle 8.5+ explicitly, as JitPack defaults to an incompatible older Gradle version:
