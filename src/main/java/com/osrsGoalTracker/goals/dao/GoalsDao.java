@@ -1,8 +1,5 @@
 package com.osrsGoalTracker.goals.dao;
 
-import java.util.List;
-
-import com.osrsGoalTracker.goals.dao.entity.RsnEntity;
 import com.osrsGoalTracker.goals.dao.entity.UserEntity;
 import com.osrsGoalTracker.goals.dao.exception.DuplicateUserException;
 import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
@@ -30,13 +27,4 @@ public interface GoalsDao {
      * @throws ResourceNotFoundException if the user is not found
      */
     UserEntity getUser(String userId);
-
-    /**
-     * Retrieves all RSNs associated with a user.
-     *
-     * @param userId The ID of the user
-     * @return List of RSN entities for the user
-     * @throws IllegalArgumentException if userId is null or empty
-     */
-    List<RsnEntity> getRsnsForUser(String userId);
 }

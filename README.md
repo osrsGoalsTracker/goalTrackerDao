@@ -44,7 +44,6 @@ To find the latest version:
 ```java
 import com.osrsGoalTracker.goals.dao.GoalsDao;
 import com.osrsGoalTracker.goals.dao.entity.UserEntity;
-import com.osrsGoalTracker.goals.dao.entity.RsnEntity;
 
 @Inject
 public YourClass(GoalsDao goalsDao) {
@@ -57,9 +56,6 @@ public YourClass(GoalsDao goalsDao) {
     
     // Get user metadata
     UserEntity user = goalsDao.getUser(newUser.getUserId());
-    
-    // Get list of RSNs for user
-    List<RsnEntity> rsns = goalsDao.getRsnsForUser(newUser.getUserId());
 }
 ```
 
@@ -71,7 +67,7 @@ The library is organized under the following package structure:
 ```
 com.osrsGoalTracker.goals.dao
 ├── GoalsDao.java         # Main interface
-├── entity/              # Public entity classes (UserEntity, RsnEntity)
+├── entity/              # Public entity classes (UserEntity)
 ├── exception/           # Public exceptions
 ├── module/             # Guice modules for dependency injection
 └── internal/           # Implementation details (not for client use)
@@ -83,21 +79,11 @@ com.osrsGoalTracker.goals.dao
 ### Entities
 
 #### UserEntity
-Base entity containing common fields:
+Entity containing user data:
 ```java
 {
     String userId;      // The user's unique identifier
     String email;       // User's email address
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
-}
-```
-
-#### RsnEntity
-```java
-{
-    String userId;      // The user's unique identifier
-    String rsn;        // RuneScape username
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }
@@ -133,18 +119,6 @@ Required fields for UserEntity when creating a user:
  * @throws ResourceNotFoundException if user doesn't exist
  */
 UserEntity getUser(String userId);
-```
-
-#### getRsnsForUser
-```java
-/**
- * Retrieves all RSNs associated with the given user ID.
- *
- * @param userId The unique identifier of the user
- * @return List of RsnEntity objects, empty list if user has no RSNs
- * @throws IllegalArgumentException if userId is null or empty
- */
-List<RsnEntity> getRsnsForUser(String userId);
 ```
 
 ### Dependency Injection
