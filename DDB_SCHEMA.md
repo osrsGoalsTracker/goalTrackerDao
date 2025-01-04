@@ -35,6 +35,7 @@ This schema is designed to support a goal tracking and notification platform for
      {
        "PK": "USER#12345",
        "SK": "METADATA",
+       "id": "12345",
        "email": "user@example.com",
        "createdAt": "2025-01-01T00:00:00Z",
        "updatedAt": "2025-01-01T00:00:00Z"
@@ -57,29 +58,28 @@ This schema is designed to support a goal tracking and notification platform for
      }
      ```
 
-#### 3. **RSN Metadata**
-   - **Sort Key:** `RSN#METADATA#<rsn>`
-   - **Purpose:** This is the metadata for the runescape account. It is used to store information about the runescape account such as the RSN, createdAt, and updatedAt.
+#### 3. **Player Metadata**
+   - **Sort Key:** `PLAYER#METADATA#<player_name>`
+   - **Purpose:** This is the metadata for the RuneScape player. It is used to store information about the player such as their name, createdAt, and updatedAt.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "RSN#METADATA#Player123",
-       "rsn": "Player123",
+       "SK": "PLAYER#METADATA#Player123",
+       "name": "Player123",
        "createdAt": "2025-01-01T00:00:00Z",
        "updatedAt": "2025-01-01T00:00:00Z"
      }
      ```
 
 #### 4. **Goal Metadata**
-   - **Sort Key:** `RSN#<rsn>#GOAL#METADATA#<skill/activity>`
-   - **Purpose:** This is the metadata for the goal. It is used to store information about the goal such as the RSN, skill/activity, targetXp, targetDate, notificationChannels, frequency, createdAt, and updatedAt.
+   - **Sort Key:** `PLAYER#<player_name>#GOAL#METADATA#<skill/activity>`
+   - **Purpose:** This is the metadata for the goal. It is used to store information about the goal such as the player name, skill/activity, targetXp, targetDate, notificationChannels, frequency, createdAt, and updatedAt.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "RSN#Player123#GOAL#METADATA#Woodcutting",
-       "rsn": "Player123",
+       "SK": "PLAYER#Player123#GOAL#METADATA#Woodcutting",
        "skill": "Woodcutting",
        "targetType": "xp",
        "targetValue": 13034431,
@@ -92,13 +92,13 @@ This schema is designed to support a goal tracking and notification platform for
      ```
 
 #### 5. **Progress Records**
-   - **Sort Key:** `RSN#<rsn>#GOAL#<skill/activity>#<timestamp>`
+   - **Sort Key:** `PLAYER#<player_name>#GOAL#<skill/activity>#<timestamp>`
    - **Purpose:** This is the progress record for the goal. It is used to store information about the progress for the goal such as the progress value, timestamp, and createdAt.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "RSN#Player123#GOAL#Woodcutting#2025-01-01T00:00:00Z",
+       "SK": "PLAYER#Player123#GOAL#Woodcutting#2025-01-01T00:00:00Z",
        "progressValue": 12000000,
        "timestamp": "2025-01-01T00:00:00Z",
        "createdAt": "2025-01-01T00:00:00Z",
@@ -107,13 +107,13 @@ This schema is designed to support a goal tracking and notification platform for
      ```
 
 #### 6. **Latest Progress**
-   - **Sort Key:** `RSN#<rsn>#GOAL#<skill/activity>#LATEST`
+   - **Sort Key:** `PLAYER#<player_name>#GOAL#<skill/activity>#LATEST`
    - **Purpose:** This is the latest progress record for the goal. It is used to store information about the latest progress for the goal such as the progress value, timestamp, and createdAt. This provides a quick way to get the latest progress for a goal.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "RSN#Player123#GOAL#Woodcutting#LATEST",
+       "SK": "PLAYER#Player123#GOAL#Woodcutting#LATEST",
        "progressValue": 12500000,
        "timestamp": "2025-01-02T00:00:00Z",
        "createdAt": "2025-01-02T00:00:00Z",
@@ -122,13 +122,13 @@ This schema is designed to support a goal tracking and notification platform for
      ```  
 
 #### 7. **Earliest Progress**
-   - **Sort Key:** `RSN#<rsn>#GOAL#<skill/activity>#EARLIEST`
+   - **Sort Key:** `PLAYER#<player_name>#GOAL#<skill/activity>#EARLIEST`
    - **Purpose:** This is the earliest progress record for the goal. It is used to store information about the earliest progress for the goal such as the timestamp, and createdAt. This provides a quick way to get the earliest progress for a goal.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "RSN#Player123#GOAL#Woodcutting#EARLIEST",
+       "SK": "PLAYER#Player123#GOAL#Woodcutting#EARLIEST",
        "timestamp": "2025-01-01T00:00:00Z",
        "createdAt": "2025-01-01T00:00:00Z",
        "updatedAt": "2025-01-01T00:00:00Z"
@@ -159,8 +159,8 @@ This schema is designed to support a goal tracking and notification platform for
 4. **Attribute Size:**
    - All attributes are small (e.g., `C2U2` fields, notification type lists) and well below DynamoDB's item size limit of 400 KB.
 
-5. **Fetching all goals for a user+RSN**
-   - Store a list of tracked skills on the user#RSN metadata field. Should it be a list or something else? Would be nice to see the most tracked skills
+5. **Fetching all goals for a user+player**
+   - Store a list of tracked skills on the user#player metadata field. Should it be a list or something else? Would be nice to see the most tracked skills.
 
 ---
 
