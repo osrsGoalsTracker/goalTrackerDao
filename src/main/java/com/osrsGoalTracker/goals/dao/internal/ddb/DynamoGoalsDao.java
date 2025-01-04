@@ -33,7 +33,7 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 public class DynamoGoalsDao implements GoalsDao {
     private static final Logger LOGGER = LogManager.getLogger(DynamoGoalsDao.class);
 
-    private static final String TABLE_NAME = "Goals";
+    private static final String TABLE_NAME = getTableName();
     private static final String PK = "PK";
     private static final String SK = "SK";
     private static final String USER_PREFIX = "USER#";
@@ -46,6 +46,18 @@ public class DynamoGoalsDao implements GoalsDao {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     private final DynamoDbClient dynamoDbClient;
+
+    private static String getTableName() {
+        String tableName = System.getenv("GOALS_TABLE_NAME");
+        if (tableName == null || tableName.trim().isEmpty()) {
+            tableName = System.getProperty("GOALS_TABLE_NAME");
+        }
+        if (tableName == null || tableName.trim().isEmpty()) {
+            throw new IllegalStateException(
+                "GOALS_TABLE_NAME must be set in environment variables or system properties");
+        }
+        return tableName;
+    }
 
     /**
      * Constructor for DynamoGoalsDao.

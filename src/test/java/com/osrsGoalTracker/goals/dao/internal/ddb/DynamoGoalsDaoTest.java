@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import com.osrsGoalTracker.goals.dao.entity.UserEntity;
+import com.osrsGoalTracker.goals.dao.exception.DuplicateUserException;
+import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,10 +21,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.osrsGoalTracker.goals.dao.entity.UserEntity;
-import com.osrsGoalTracker.goals.dao.exception.DuplicateUserException;
-import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -35,6 +35,7 @@ class DynamoGoalsDaoTest {
     private static final String TEST_USER_ID = "testUser123";
     private static final String TEST_EMAIL = "test@example.com";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
+    private static final String TEST_TABLE_NAME = "GoalsTable-dev";
 
     @Mock
     private DynamoDbClient dynamoDbClient;
@@ -49,6 +50,7 @@ class DynamoGoalsDaoTest {
 
     @BeforeEach
     void setUp() {
+        System.setProperty("GOALS_TABLE_NAME", TEST_TABLE_NAME);
         goalsDao = new DynamoGoalsDao(dynamoDbClient);
     }
 
@@ -67,7 +69,7 @@ class DynamoGoalsDaoTest {
         verify(dynamoDbClient).putItem(putItemRequestCaptor.capture());
         PutItemRequest capturedRequest = putItemRequestCaptor.getValue();
 
-        assertThat(capturedRequest.tableName()).isEqualTo("Goals");
+        assertThat(capturedRequest.tableName()).isEqualTo(TEST_TABLE_NAME);
 
         Map<String, AttributeValue> item = capturedRequest.item();
         assertThat(item.get("PK").s()).isEqualTo("USER#" + TEST_USER_ID);
