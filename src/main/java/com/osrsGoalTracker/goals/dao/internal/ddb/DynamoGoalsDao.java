@@ -2,7 +2,7 @@ package com.osrsGoalTracker.goals.dao.internal.ddb;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.google.inject.Inject;
@@ -34,8 +34,8 @@ public class DynamoGoalsDao implements GoalsDao {
     private static final Logger LOGGER = LogManager.getLogger(DynamoGoalsDao.class);
 
     private static final String TABLE_NAME = getTableName();
-    private static final String PK = "PK";
-    private static final String SK = "SK";
+    private static final String PK = "pk";
+    private static final String SK = "sk";
     private static final String USER_PREFIX = "USER#";
 
     private static final String ID = "id";
@@ -54,7 +54,7 @@ public class DynamoGoalsDao implements GoalsDao {
         }
         if (tableName == null || tableName.trim().isEmpty()) {
             throw new IllegalStateException(
-                "GOALS_TABLE_NAME must be set in environment variables or system properties");
+                    "GOALS_TABLE_NAME must be set in environment variables or system properties");
         }
         return tableName;
     }
@@ -87,7 +87,7 @@ public class DynamoGoalsDao implements GoalsDao {
         LocalDateTime now = LocalDateTime.now();
         String timestamp = now.format(DATE_TIME_FORMATTER);
 
-        Map<String, AttributeValue> item = new HashMap<>();
+        Map<String, AttributeValue> item = new LinkedHashMap<>();
         item.put(PK, AttributeValue.builder().s(USER_PREFIX + user.getUserId()).build());
         item.put(SK, AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
         item.put(ID, AttributeValue.builder().s(user.getUserId()).build());
@@ -97,43 +97,47 @@ public class DynamoGoalsDao implements GoalsDao {
 
         try {
             PutItemRequest putItemRequest = PutItemRequest.builder()
-                .tableName(TABLE_NAME)
-                .item(item)
-                .conditionExpression("attribute_not_exists(#pk) AND attribute_not_exists(#sk)")
-                .expressionAttributeNames(Map.of(
-                    "#pk", PK,
-                    "#sk", SK))
-                .build();
+                    .tableName(TABLE_NAME)
+                    .item(item)
+                    .conditionExpression("attribute_not_exists(#pk) AND attribute_not_exists(#sk)")
+                    .expressionAttributeNames(Map.of(
+                            "#pk", PK,
+                            "#sk", SK))
+                    .build();
 
+            LOGGER.debug("Sending PutItem request: {}", putItemRequest);
             dynamoDbClient.putItem(putItemRequest);
         } catch (software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException e) {
             throw new DuplicateUserException("User already exists with ID: " + user.getUserId(), e);
         }
 
         return UserEntity.builder()
-            .userId(user.getUserId())
-            .email(user.getEmail())
-            .createdAt(now)
-            .updatedAt(now)
-            .build();
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
     }
 
     @Override
     public UserEntity getUser(String userId) {
-        LOGGER.debug("Getting the user with ID: {}", userId);
+        LOGGER.debug("Getting user with ID: {}", userId);
 
         if (userId == null || userId.trim().isEmpty()) {
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
 
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
-        key.put(SK, AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
+        String pk = USER_PREFIX + userId;
+        String sk = SortKeyUtil.getUserMetadataSortKey();
+
+        Map<String, AttributeValue> key = new LinkedHashMap<>();
+        key.put(PK, AttributeValue.builder().s(pk).build());
+        key.put(SK, AttributeValue.builder().s(sk).build());
 
         GetItemRequest request = GetItemRequest.builder()
-            .tableName(TABLE_NAME)
-            .key(key)
-            .build();
+                .tableName(TABLE_NAME)
+                .key(key)
+                .build();
 
         GetItemResponse response = dynamoDbClient.getItem(request);
         if (!response.hasItem()) {
@@ -142,10 +146,10 @@ public class DynamoGoalsDao implements GoalsDao {
 
         Map<String, AttributeValue> item = response.item();
         return UserEntity.builder()
-            .userId(item.get(ID).s())
-            .email(item.get(EMAIL).s())
-            .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
-            .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
-            .build();
+                .userId(item.get(ID).s())
+                .email(item.get(EMAIL).s())
+                .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
+                .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
+                .build();
     }
-} 
+}

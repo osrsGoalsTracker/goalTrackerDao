@@ -72,8 +72,8 @@ class DynamoGoalsDaoTest {
         assertThat(capturedRequest.tableName()).isEqualTo(TEST_TABLE_NAME);
 
         Map<String, AttributeValue> item = capturedRequest.item();
-        assertThat(item.get("PK").s()).isEqualTo("USER#" + TEST_USER_ID);
-        assertThat(item.get("SK").s()).isEqualTo("METADATA");
+        assertThat(item.get("pk").s()).isEqualTo("USER#" + TEST_USER_ID);
+        assertThat(item.get("sk").s()).isEqualTo("METADATA");
         assertThat(item.get("id").s()).isEqualTo(TEST_USER_ID);
         assertThat(item.get("email").s()).isEqualTo(TEST_EMAIL);
         assertThat(item.get("createdAt").s()).isNotEmpty();
@@ -129,8 +129,8 @@ class DynamoGoalsDaoTest {
         verify(dynamoDbClient).getItem(getItemRequestCaptor.capture());
         GetItemRequest capturedRequest = getItemRequestCaptor.getValue();
 
-        assertThat(capturedRequest.key().get("PK").s()).isEqualTo("USER#" + TEST_USER_ID);
-        assertThat(capturedRequest.key().get("SK").s()).isEqualTo("METADATA");
+        assertThat(capturedRequest.key().get("pk").s()).isEqualTo("USER#" + TEST_USER_ID);
+        assertThat(capturedRequest.key().get("sk").s()).isEqualTo("METADATA");
 
         assertThat(user.getUserId()).isEqualTo(TEST_USER_ID);
         assertThat(user.getEmail()).isEqualTo(TEST_EMAIL);
