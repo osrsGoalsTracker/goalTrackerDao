@@ -76,9 +76,11 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
 
     private void validateUserEntity(UserEntity user) {
         if (user == null) {
+            LOGGER.warn("Attempted to create null user");
             throw new IllegalArgumentException("User entity cannot be null");
         }
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            LOGGER.warn("Attempted to create user with null or empty email");
             throw new IllegalArgumentException("Email cannot be null or empty");
         }
     }
@@ -129,13 +131,15 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
 
     @Override
     public UserEntity createUser(UserEntity user) {
-        LOGGER.debug("Creating new user: {}", user);
+        LOGGER.debug("Attempting to create user: {}", user);
 
-        // throws IllegalArgumentException if user is null or email is null or empty
         validateUserEntity(user);
+
+        LOGGER.debug("Creating new user with email: {}", user.getEmail());
 
         Map<String, AttributeValue> existingItem = checkIfUserExists(user.getEmail());
         if (existingItem != null) {
+            LOGGER.warn("Attempted to create user with existing email: {}", user.getEmail());
             throw new DuplicateUserException("User already exists with email: " + user.getEmail());
         }
 
@@ -155,8 +159,11 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
                             "#sk", SK))
                     .build();
 
+            LOGGER.debug("Putting new user item in DynamoDB with ID: {}", newUserId);
             dynamoDbClient.putItem(putItemRequest);
+            LOGGER.info("Successfully created new user with ID: {} and email: {}", newUserId, user.getEmail());
         } catch (ConditionalCheckFailedException e) {
+            LOGGER.warn("Concurrent attempt to create user with email: {}", user.getEmail());
             throw new DuplicateUserException("User already exists with email: " + user.getEmail());
         }
 
@@ -173,6 +180,7 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
         LOGGER.debug("Getting user with ID: {}", userId);
 
         if (userId == null || userId.trim().isEmpty()) {
+            LOGGER.warn("Attempted to get user with null or empty ID");
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
 
@@ -190,15 +198,19 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
 
         GetItemResponse response = dynamoDbClient.getItem(request);
         if (!response.hasItem()) {
+            LOGGER.warn("User not found with ID: {}", userId);
             throw new ResourceNotFoundException("User not found with ID: " + userId);
         }
 
         Map<String, AttributeValue> item = response.item();
-        return UserEntity.builder()
+        UserEntity user = UserEntity.builder()
                 .userId(item.get(ID).s())
                 .email(item.get(EMAIL).s())
                 .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
                 .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
                 .build();
+
+        LOGGER.debug("Successfully retrieved user: {}", user);
+        return user;
     }
 }
