@@ -15,6 +15,7 @@ import com.osrsGoalTracker.goals.dao.internal.ddb.util.SortKeyUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
@@ -107,7 +108,7 @@ public class DynamoGoalsDao implements GoalsDao {
 
             LOGGER.debug("Sending PutItem request: {}", putItemRequest);
             dynamoDbClient.putItem(putItemRequest);
-        } catch (software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException e) {
+        } catch (ConditionalCheckFailedException e) {
             throw new DuplicateUserException("User already exists with ID: " + user.getUserId(), e);
         }
 
