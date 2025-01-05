@@ -1,10 +1,10 @@
-package com.osrsGoalTracker.goalsTracker.dao.internal.ddb.util;
+package com.osrsGoalTracker.dao.goalTracker.internal.ddb.util;
 
 /**
  * Utility class for constructing sort keys for DynamoDB operations.
  */
 public final class SortKeyUtil {
-    
+
     private SortKeyUtil() {
         throw new UnsupportedOperationException("This is a utility class and should not be instantiated");
     }

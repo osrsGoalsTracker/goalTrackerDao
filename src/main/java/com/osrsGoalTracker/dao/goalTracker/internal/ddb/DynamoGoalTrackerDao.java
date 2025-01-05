@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.goalsTracker.dao.internal.ddb;
+package com.osrsGoalTracker.dao.goalTracker.internal.ddb;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -6,11 +6,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.google.inject.Inject;
-import com.osrsGoalTracker.goalsTracker.dao.GoalsTrackerDao;
-import com.osrsGoalTracker.goalsTracker.dao.entity.UserEntity;
-import com.osrsGoalTracker.goalsTracker.dao.exception.DuplicateUserException;
-import com.osrsGoalTracker.goalsTracker.dao.exception.ResourceNotFoundException;
-import com.osrsGoalTracker.goalsTracker.dao.internal.ddb.util.SortKeyUtil;
+import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
+import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
+import com.osrsGoalTracker.dao.goalTracker.exception.DuplicateUserException;
+import com.osrsGoalTracker.dao.goalTracker.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.dao.goalTracker.internal.ddb.util.SortKeyUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,8 +31,8 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
  * - Sort Key (SK): Various formats depending on the data type
  * - User metadata: METADATA
  */
-public class DynamoGoalsTrackerDao implements GoalsTrackerDao {
-    private static final Logger LOGGER = LogManager.getLogger(DynamoGoalsTrackerDao.class);
+public class DynamoGoalTrackerDao implements GoalTrackerDao {
+    private static final Logger LOGGER = LogManager.getLogger(DynamoGoalTrackerDao.class);
 
     private static final String TABLE_NAME = getTableName();
     private static final String PK = "pk";
@@ -67,7 +67,7 @@ public class DynamoGoalsTrackerDao implements GoalsTrackerDao {
      * @param dynamoDbClient The AWS DynamoDB client
      */
     @Inject
-    public DynamoGoalsTrackerDao(DynamoDbClient dynamoDbClient) {
+    public DynamoGoalTrackerDao(DynamoDbClient dynamoDbClient) {
         this.dynamoDbClient = dynamoDbClient;
     }
 
@@ -106,10 +106,9 @@ public class DynamoGoalsTrackerDao implements GoalsTrackerDao {
                             "#sk", SK))
                     .build();
 
-            LOGGER.debug("Sending PutItem request: {}", putItemRequest);
             dynamoDbClient.putItem(putItemRequest);
         } catch (ConditionalCheckFailedException e) {
-            throw new DuplicateUserException("User already exists with ID: " + user.getUserId(), e);
+            throw new DuplicateUserException("User already exists with ID: " + user.getUserId());
         }
 
         return UserEntity.builder()
