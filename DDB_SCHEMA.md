@@ -143,6 +143,11 @@ This schema is designed to support a goal tracking and notification platform for
 - **PK:** `USER#<user_id>`
 - **SK:** Encodes metadata, notification channels, goals, and progress.
 
+#### Secondary Index
+- **PK:** `email`
+- **SK:** `METADATA`
+- **Purpose:** This is the secondary index for the user. It is used to quickly query for a user by their email.
+
 ---
 
 ### Additional Considerations
