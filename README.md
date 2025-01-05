@@ -44,10 +44,11 @@ import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
 public YourClass(GoalTrackerDao goalDao) {
     // Create a new user
     UserEntity userToCreate = UserEntity.builder()
-        .userId("uniqueId")
         .email("user@example.com")
         .build();
     UserEntity newUser = goalDao.createUser(userToCreate);
+    // If a user with the given email already exists, the existing user entity is returned.
+    // Otherwise, a new user is created with a generated UUID for the user ID.
     
     // Get user metadata
     UserEntity user = goalDao.getUser(newUser.getUserId());

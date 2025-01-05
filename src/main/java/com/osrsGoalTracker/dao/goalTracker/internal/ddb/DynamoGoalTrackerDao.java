@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.google.inject.Inject;
 import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
@@ -21,6 +22,8 @@ import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedExce
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 /**
  * DynamoDB implementation of the GoalsTrackerDao interface.
@@ -71,30 +74,76 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
         this.dynamoDbClient = dynamoDbClient;
     }
 
-    @Override
-    public UserEntity createUser(UserEntity user) {
-        LOGGER.debug("Creating new user: {}", user);
-
+    private void validateUserEntity(UserEntity user) {
         if (user == null) {
             throw new IllegalArgumentException("User entity cannot be null");
-        }
-        if (user.getUserId() == null || user.getUserId().trim().isEmpty()) {
-            throw new IllegalArgumentException("UserId cannot be null or empty");
         }
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
             throw new IllegalArgumentException("Email cannot be null or empty");
         }
+    }
 
+    private Map<String, AttributeValue> checkIfUserExists(String email) {
+        Map<String, AttributeValue> expressionAttributeValues = Map.of(
+                ":email", AttributeValue.builder().s(email).build(),
+                ":sk", AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
+
+        QueryRequest queryRequest = QueryRequest.builder()
+                .tableName(TABLE_NAME)
+                .keyConditionExpression("email = :email AND sk = :sk")
+                .expressionAttributeValues(expressionAttributeValues)
+                .indexName("EmailIndex")
+                .build();
+
+        QueryResponse queryResponse = dynamoDbClient.query(queryRequest);
+
+        if (!queryResponse.items().isEmpty()) {
+            return queryResponse.items().get(0);
+        }
+        return null;
+    }
+
+    private UserEntity buildUserEntityFromItem(Map<String, AttributeValue> item) {
+        return UserEntity.builder()
+                .userId(item.get(ID).s())
+                .email(item.get(EMAIL).s())
+                .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
+                .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
+                .build();
+    }
+
+    private String generateNewUserId() {
+        return UUID.randomUUID().toString();
+    }
+
+    private Map<String, AttributeValue> createNewUserItem(String userId, String email, String timestamp) {
+        Map<String, AttributeValue> item = new LinkedHashMap<>();
+        item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
+        item.put(SK, AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
+        item.put(ID, AttributeValue.builder().s(userId).build());
+        item.put(EMAIL, AttributeValue.builder().s(email).build());
+        item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
+        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
+        return item;
+    }
+
+    @Override
+    public UserEntity createUser(UserEntity user) {
+        LOGGER.debug("Creating new user: {}", user);
+
+        // throws IllegalArgumentException if user is null or email is null or empty
+        validateUserEntity(user);
+
+        Map<String, AttributeValue> existingItem = checkIfUserExists(user.getEmail());
+        if (existingItem != null) {
+            throw new DuplicateUserException("User already exists with email: " + user.getEmail());
+        }
+
+        String newUserId = generateNewUserId();
         LocalDateTime now = LocalDateTime.now();
         String timestamp = now.format(DATE_TIME_FORMATTER);
 
-        Map<String, AttributeValue> item = new LinkedHashMap<>();
-        item.put(PK, AttributeValue.builder().s(USER_PREFIX + user.getUserId()).build());
-        item.put(SK, AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
-        item.put(ID, AttributeValue.builder().s(user.getUserId()).build());
-        item.put(EMAIL, AttributeValue.builder().s(user.getEmail()).build());
-        item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
-        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
+        Map<String, AttributeValue> item = createNewUserItem(newUserId, user.getEmail(), timestamp);
 
         try {
             PutItemRequest putItemRequest = PutItemRequest.builder()
@@ -108,11 +157,11 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
 
             dynamoDbClient.putItem(putItemRequest);
         } catch (ConditionalCheckFailedException e) {
-            throw new DuplicateUserException("User already exists with ID: " + user.getUserId());
+            throw new DuplicateUserException("User already exists with email: " + user.getEmail());
         }
 
         return UserEntity.builder()
-                .userId(user.getUserId())
+                .userId(newUserId)
                 .email(user.getEmail())
                 .createdAt(now)
                 .updatedAt(now)

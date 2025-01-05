@@ -24,10 +24,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 @ExtendWith(MockitoExtension.class)
 class DynamoGoalTrackerDaoTest {
@@ -58,9 +60,16 @@ class DynamoGoalTrackerDaoTest {
     void testCreateUserSuccess() {
         // Given
         UserEntity userToCreate = UserEntity.builder()
-                .userId(TEST_USER_ID)
                 .email(TEST_EMAIL)
                 .build();
+
+        // Mock query response for checkIfUserExists
+        when(dynamoDbClient.query(any(QueryRequest.class)))
+                .thenReturn(QueryResponse.builder().build());
+
+        // Mock successful putItem response
+        when(dynamoDbClient.putItem(any(PutItemRequest.class)))
+                .thenReturn(PutItemResponse.builder().build());
 
         // When
         UserEntity createdUser = goalsDao.createUser(userToCreate);
@@ -72,14 +81,14 @@ class DynamoGoalTrackerDaoTest {
         assertThat(capturedRequest.tableName()).isEqualTo(TEST_TABLE_NAME);
 
         Map<String, AttributeValue> item = capturedRequest.item();
-        assertThat(item.get("pk").s()).isEqualTo("USER#" + TEST_USER_ID);
+        assertThat(item.get("pk").s()).startsWith("USER#");
         assertThat(item.get("sk").s()).isEqualTo("METADATA");
-        assertThat(item.get("id").s()).isEqualTo(TEST_USER_ID);
+        assertThat(item.get("id").s()).isNotEmpty();
         assertThat(item.get("email").s()).isEqualTo(TEST_EMAIL);
         assertThat(item.get("createdAt").s()).isNotEmpty();
         assertThat(item.get("updatedAt").s()).isNotEmpty();
 
-        assertThat(createdUser.getUserId()).isEqualTo(TEST_USER_ID);
+        assertThat(createdUser.getUserId()).isNotEmpty();
         assertThat(createdUser.getEmail()).isEqualTo(TEST_EMAIL);
         assertThat(createdUser.getCreatedAt()).isNotNull();
         assertThat(createdUser.getUpdatedAt()).isNotNull();
@@ -89,17 +98,22 @@ class DynamoGoalTrackerDaoTest {
     void testCreateUserDuplicateUser() {
         // Given
         UserEntity userToCreate = UserEntity.builder()
-                .userId(TEST_USER_ID)
                 .email(TEST_EMAIL)
                 .build();
 
-        when(dynamoDbClient.putItem(any(PutItemRequest.class)))
-                .thenThrow(ConditionalCheckFailedException.class);
+        // Mock query response for checkIfUserExists to indicate user exists
+        Map<String, AttributeValue> existingItem = Map.of(
+                "email", AttributeValue.builder().s(TEST_EMAIL).build(),
+                "id", AttributeValue.builder().s("existingId").build());
+        when(dynamoDbClient.query(any(QueryRequest.class)))
+                .thenReturn(QueryResponse.builder()
+                        .items(existingItem)
+                        .build());
 
         // Then
         assertThatThrownBy(() -> goalsDao.createUser(userToCreate))
                 .isInstanceOf(DuplicateUserException.class)
-                .hasMessageContaining(TEST_USER_ID);
+                .hasMessageContaining("User already exists with email: " + TEST_EMAIL);
     }
 
     @Test
@@ -147,13 +161,13 @@ class DynamoGoalTrackerDaoTest {
         // Then
         assertThatThrownBy(() -> goalsDao.getUser(TEST_USER_ID))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining(TEST_USER_ID);
+                .hasMessageContaining("User not found");
     }
 
     @Test
     void testGetUserNull() {
         assertThatThrownBy(() -> goalsDao.getUser(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("cannot be null");
+                .hasMessageContaining("cannot be null or empty");
     }
 }
