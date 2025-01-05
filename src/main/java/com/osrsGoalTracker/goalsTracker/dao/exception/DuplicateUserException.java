@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.goals.dao.exception;
+package com.osrsGoalTracker.goalsTracker.dao.exception;
 
 /**
  * Exception thrown when attempting to create a user that already exists.
@@ -6,7 +6,7 @@ package com.osrsGoalTracker.goals.dao.exception;
 public class DuplicateUserException extends RuntimeException {
 
     /**
-     * Constructs a new DuplicateUserException with the specified message.
+     * Constructs a new DuplicateUserException with the specified detail message.
      *
      * @param message The detail message
      */
@@ -15,7 +15,8 @@ public class DuplicateUserException extends RuntimeException {
     }
 
     /**
-     * Constructs a new DuplicateUserException with the specified message and cause.
+     * Constructs a new DuplicateUserException with the specified detail message and
+     * cause.
      *
      * @param message The detail message
      * @param cause   The cause of the exception

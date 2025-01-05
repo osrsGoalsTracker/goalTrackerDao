@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.goals.dao.internal.ddb;
+package com.osrsGoalTracker.goalsTracker.dao.internal.ddb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import com.osrsGoalTracker.goals.dao.entity.UserEntity;
-import com.osrsGoalTracker.goals.dao.exception.DuplicateUserException;
-import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.goalsTracker.dao.entity.UserEntity;
+import com.osrsGoalTracker.goalsTracker.dao.exception.DuplicateUserException;
+import com.osrsGoalTracker.goalsTracker.dao.exception.ResourceNotFoundException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 @ExtendWith(MockitoExtension.class)
-class DynamoGoalsDaoTest {
+class DynamoGoalsTrackerDaoTest {
 
     private static final String TEST_USER_ID = "testUser123";
     private static final String TEST_EMAIL = "test@example.com";
@@ -46,12 +46,12 @@ class DynamoGoalsDaoTest {
     @Captor
     private ArgumentCaptor<GetItemRequest> getItemRequestCaptor;
 
-    private DynamoGoalsDao goalsDao;
+    private DynamoGoalsTrackerDao goalsDao;
 
     @BeforeEach
     void setUp() {
         System.setProperty("GOALS_TABLE_NAME", TEST_TABLE_NAME);
-        goalsDao = new DynamoGoalsDao(dynamoDbClient);
+        goalsDao = new DynamoGoalsTrackerDao(dynamoDbClient);
     }
 
     @Test

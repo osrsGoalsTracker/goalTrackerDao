@@ -1,5 +1,6 @@
-package com.osrsGoalTracker.goals.dao.entity;
+package com.osrsGoalTracker.goalsTracker.dao.entity;
 
+import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
  * - createdAt: Timestamp when the entity was created
  * - updatedAt: Timestamp when the entity was last updated
  */
+@Data
 @SuperBuilder
 public abstract class AbstractEntity {
     /**
@@ -36,46 +38,7 @@ public abstract class AbstractEntity {
      */
     private final LocalDateTime updatedAt;
 
-    /**
-     * Protected constructor for AbstractEntity.
-     *
-     * @param userId    The unique identifier of the user
-     * @param createdAt When the entity was created
-     * @param updatedAt When the entity was last updated
-     */
-    protected AbstractEntity(String userId, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.userId = userId;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-    /**
-     * Gets the user ID.
-     *
-     * @return The user ID
-     */
-    public String getUserId() {
-        return userId;
-    }
-
-    /**
-     * Gets the creation timestamp.
-     *
-     * @return The creation timestamp
-     */
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    /**
-     * Gets the last update timestamp.
-     *
-     * @return The last update timestamp
-     */
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

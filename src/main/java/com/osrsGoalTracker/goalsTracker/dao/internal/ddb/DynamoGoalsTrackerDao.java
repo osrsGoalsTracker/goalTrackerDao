@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.goals.dao.internal.ddb;
+package com.osrsGoalTracker.goalsTracker.dao.internal.ddb;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -6,24 +6,24 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.google.inject.Inject;
-import com.osrsGoalTracker.goals.dao.GoalsDao;
-import com.osrsGoalTracker.goals.dao.entity.UserEntity;
-import com.osrsGoalTracker.goals.dao.exception.DuplicateUserException;
-import com.osrsGoalTracker.goals.dao.exception.ResourceNotFoundException;
-import com.osrsGoalTracker.goals.dao.internal.ddb.util.SortKeyUtil;
+import com.osrsGoalTracker.goalsTracker.dao.GoalsTrackerDao;
+import com.osrsGoalTracker.goalsTracker.dao.entity.UserEntity;
+import com.osrsGoalTracker.goalsTracker.dao.exception.DuplicateUserException;
+import com.osrsGoalTracker.goalsTracker.dao.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.goalsTracker.dao.internal.ddb.util.SortKeyUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 /**
- * DynamoDB implementation of the GoalsDao interface.
+ * DynamoDB implementation of the GoalsTrackerDao interface.
  * Handles all DynamoDB operations for goals tracking data.
  * 
  * This implementation uses a single-table design with composite keys:
@@ -31,8 +31,8 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
  * - Sort Key (SK): Various formats depending on the data type
  * - User metadata: METADATA
  */
-public class DynamoGoalsDao implements GoalsDao {
-    private static final Logger LOGGER = LogManager.getLogger(DynamoGoalsDao.class);
+public class DynamoGoalsTrackerDao implements GoalsTrackerDao {
+    private static final Logger LOGGER = LogManager.getLogger(DynamoGoalsTrackerDao.class);
 
     private static final String TABLE_NAME = getTableName();
     private static final String PK = "pk";
@@ -61,13 +61,13 @@ public class DynamoGoalsDao implements GoalsDao {
     }
 
     /**
-     * Constructor for DynamoGoalsDao.
+     * Constructor for DynamoGoalsTrackerDao.
      * Uses Guice for dependency injection of the DynamoDB client.
      *
      * @param dynamoDbClient The AWS DynamoDB client
      */
     @Inject
-    public DynamoGoalsDao(DynamoDbClient dynamoDbClient) {
+    public DynamoGoalsTrackerDao(DynamoDbClient dynamoDbClient) {
         this.dynamoDbClient = dynamoDbClient;
     }
 

@@ -42,11 +42,11 @@ To find the latest version:
 
 ### Managing Users
 ```java
-import com.osrsGoalTracker.goals.dao.GoalsDao;
+import com.osrsGoalTracker.goals.dao.GoalsTrackerDao;
 import com.osrsGoalTracker.goals.dao.entity.UserEntity;
 
 @Inject
-public YourClass(GoalsDao goalsDao) {
+public YourClass(GoalsTrackerDao goalsDao) {
     // Create a new user
     UserEntity userToCreate = UserEntity.builder()
         .userId("uniqueId")
@@ -65,16 +65,47 @@ public YourClass(GoalsDao goalsDao) {
 
 The library is organized under the following package structure:
 ```
-com.osrsGoalTracker.goals.dao
-├── GoalsDao.java         # Main interface
-├── entity/              # Public entity classes (UserEntity)
-├── exception/           # Public exceptions
-├── module/             # Guice modules for dependency injection
-└── internal/           # Implementation details (not for client use)
-    └── ddb/
-        ├── DynamoGoalsDao.java
-        └── util/        # Internal utilities
+com.osrsGoalTracker.goalsTracker.dao
+├── GoalsTrackerDao.java              # Main interface
+├── entity/                    # Public entity classes
+│   ├── AbstractEntity.java    # Base entity class with common fields
+│   └── UserEntity.java        # User entity implementation
+├── exception/                 # Public exceptions
+│   ├── DuplicateUserException.java
+│   └── ResourceNotFoundException.java
+├── module/                    # Guice modules for dependency injection
+│   └── GoalsTrackerDaoModule.java
+└── internal/                  # Implementation details (not for client use)
+    └── ddb/                   # DynamoDB specific implementation
+        ├── DynamoGoalsTrackerDao.java
+        └── util/              # Internal utilities
+            └── SortKeyUtil.java
 ```
+
+### Naming Conventions
+
+1. **Packages**
+   - All packages start with base package `com.osrsGoalTracker.goalsTracker.dao`
+   - Implementation-specific code goes under `.internal`
+   - Database-specific code goes under `.internal.ddb`
+   - Utility classes go under `.internal.ddb.util`
+
+2. **Classes**
+   - Entity classes end with `Entity` (e.g., `UserEntity`)
+   - Abstract classes start with `Abstract` (e.g., `AbstractEntity`)
+   - Utility classes end with `Util` (e.g., `SortKeyUtil`)
+   - Exception classes end with `Exception`
+   - Implementation classes start with their implementation type (e.g., `DynamoGoalsTrackerDao`)
+
+3. **Methods**
+   - CRUD operations use standard naming: `create`, `get`, `update`, `delete`
+   - Boolean methods start with `is` or `has`
+   - Utility methods should be descriptive and action-oriented
+
+4. **Tests**
+   - Test classes end with `Test` (e.g., `DynamoGoalsTrackerDaoTest`)
+   - Test methods use descriptive names explaining the scenario and expected outcome
+   - Test methods start with `test` (e.g., `testCreateUserSuccess`)
 
 ### Entities
 
@@ -126,14 +157,14 @@ UserEntity getUser(String userId);
 The library uses Guice for dependency injection. To use it in your application:
 
 ```java
-import com.osrsGoalTracker.goals.dao.GoalsDao;
-import com.osrsGoalTracker.goals.dao.module.GoalsDaoModule;
+import com.osrsGoalTracker.goals.dao.GoalsTrackerDao;
+import com.osrsGoalTracker.goals.dao.module.GoalsTrackerDaoModule;
 
-// Create injector with the GoalsDaoModule
-Injector injector = Guice.createInjector(new GoalsDaoModule());
+// Create injector with the GoalsTrackerDaoModule
+Injector injector = Guice.createInjector(new GoalsTrackerDaoModule());
 
-// Get an instance of GoalsDao
-GoalsDao goalsDao = injector.getInstance(GoalsDao.class);
+// Get an instance of GoalsTrackerDao
+GoalsTrackerDao goalsDao = injector.getInstance(GoalsTrackerDao.class);
 ```
 
 ## Development
