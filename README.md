@@ -189,4 +189,26 @@ GoalsTrackerDao goalsDao = injector.getInstance(GoalsTrackerDao.class);
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Entities
+
+### UserEntity
+Represents a user in the system. Extends AbstractEntity.
+
+#### Fields:
+- `email` (String): The user's email address
+- Inherited from AbstractEntity:
+  - `userId` (String): Unique identifier for the user
+  - `createdAt` (Instant): Timestamp when the user was created
+  - `updatedAt` (Instant): Timestamp when the user was last updated
+
+#### Usage:
+```java
+UserEntity user = UserEntity.builder()
+    .userId("user123")
+    .email("user@example.com")
+    .createdAt(LocalDateTime.now())
+    .updatedAt(LocalDateTime.now())
+    .build();
+```

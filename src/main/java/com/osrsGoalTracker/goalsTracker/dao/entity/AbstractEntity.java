@@ -1,9 +1,11 @@
 package com.osrsGoalTracker.goalsTracker.dao.entity;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
-
 import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Abstract base class for all entities in the system.
@@ -19,26 +21,27 @@ import java.time.LocalDateTime;
  */
 @Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class AbstractEntity {
     /**
      * The unique identifier of the user who owns this entity.
      * Used as part of the partition key in DynamoDB.
      */
-    private final String userId;
+    private String userId;
 
     /**
      * The timestamp when this entity was created.
      * Stored in ISO-8601 format in DynamoDB.
      */
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     /**
      * The timestamp when this entity was last updated.
      * Stored in ISO-8601 format in DynamoDB.
      */
-    private final LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
-    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -53,4 +56,3 @@ public abstract class AbstractEntity {
         return sb.toString();
     }
 }
-

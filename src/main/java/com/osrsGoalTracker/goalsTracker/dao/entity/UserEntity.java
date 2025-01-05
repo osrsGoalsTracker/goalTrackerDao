@@ -1,7 +1,6 @@
 package com.osrsGoalTracker.goalsTracker.dao.entity;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -9,9 +8,8 @@ import lombok.experimental.SuperBuilder;
  * Extends AbstractEntity to inherit common fields like userId, createdAt, and
  * updatedAt.
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
+@Getter
 @SuperBuilder
 public class UserEntity extends AbstractEntity {
-    private final String email;
+    private String email;
 }
