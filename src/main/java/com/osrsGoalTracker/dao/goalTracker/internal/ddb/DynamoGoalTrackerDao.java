@@ -49,13 +49,13 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
     private final DynamoDbClient dynamoDbClient;
 
     private static String getTableName() {
-        String tableName = System.getenv("GOALS_TABLE_NAME");
+        String tableName = System.getenv("GOAL_TRACKER_TABLE_NAME");
         if (tableName == null || tableName.trim().isEmpty()) {
-            tableName = System.getProperty("GOALS_TABLE_NAME");
+            tableName = System.getProperty("GOAL_TRACKER_TABLE_NAME");
         }
         if (tableName == null || tableName.trim().isEmpty()) {
             throw new IllegalStateException(
-                    "GOALS_TABLE_NAME must be set in environment variables or system properties");
+                    "GOAL_TRACKER_TABLE_NAME must be set in environment variables or system properties");
         }
         return tableName;
     }

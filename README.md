@@ -1,4 +1,4 @@
-# Goal DAO Library
+# Goal Tracker DAO Library
 
 A Java library for interacting with DynamoDB to manage OSRS goal tracking data. This library provides a clean abstraction over DynamoDB operations, handling the complexities of partition keys and sort keys internally.
 

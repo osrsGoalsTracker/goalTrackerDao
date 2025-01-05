@@ -50,7 +50,7 @@ class DynamoGoalTrackerDaoTest {
 
     @BeforeEach
     void setUp() {
-        System.setProperty("GOALS_TABLE_NAME", TEST_TABLE_NAME);
+        System.setProperty("GOAL_TRACKER_TABLE_NAME", TEST_TABLE_NAME);
         goalsDao = new DynamoGoalTrackerDao(dynamoDbClient);
     }
 
