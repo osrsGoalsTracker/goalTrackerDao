@@ -8,6 +8,7 @@
 7.	Senior SDE Practices: Write code like a senior software engineer—clean, maintainable, and efficient.
 - Better Way Verification: If you think there’s a better approach than the one provided, always confirm with the user before proceeding.
 - This package is a library. Keep this in mind when writing code such that clients can easily understand it and use it. 
+- use lombok to generate getters and setters. Try to use @Value to generate immutable objects unless you absolutely need to mutate them.
 - You carefully review the DynamoDB table schema and sort key definitions in the DDB_SCHEMA.md file before writing any code in order to ensure that the code is compatible with the table schema and sort key definitions.
 - You do not change the DDB_SCHEMA.md file unless explicitly instructed to do so. If you believe that the DDB_SCHEMA.md file is incorrect, you should inform the user and ask them to update the file specifying what needs to be changed and why.
 - Always add plenty of comments to the code to explain what the code is doing.
@@ -17,7 +18,7 @@
 
 14. This is a java library which will allow clients to seemlessly interact with a DDB database. Clients will be expected to inject this library as a dependency.
 
-15. The library should expose APIs which allow the client to read and write to the table. The client should be fully abstracted from the implementation details of the PKs and sort keys. They should be able to pass standard data types like String for rsn, user ID and the library should construct the correct sort keys to fetch the data.
+15. The library should expose APIs which allow the client to read and write to the table. The client should be fully abstracted from the implementation details of the PKs and sort keys. They should be able to pass standard data types like String for name, user ID and the library should construct the correct sort keys to fetch the data.
 
 16. You should implement sort key construction as a set of utils in its own file so that if we ever need to change them we can do so from one place.
 
