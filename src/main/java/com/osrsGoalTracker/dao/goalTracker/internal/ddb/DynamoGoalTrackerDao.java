@@ -94,7 +94,7 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
                 .tableName(TABLE_NAME)
                 .keyConditionExpression("email = :email AND sk = :sk")
                 .expressionAttributeValues(expressionAttributeValues)
-                .indexName("EmailIndex")
+                .indexName("email-sk-index")
                 .build();
 
         QueryResponse queryResponse = dynamoDbClient.query(queryRequest);
