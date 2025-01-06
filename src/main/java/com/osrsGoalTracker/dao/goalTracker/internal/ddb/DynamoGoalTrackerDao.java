@@ -105,15 +105,6 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
         return null;
     }
 
-    private UserEntity buildUserEntityFromItem(Map<String, AttributeValue> item) {
-        return UserEntity.builder()
-                .userId(item.get(ID).s())
-                .email(item.get(EMAIL).s())
-                .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
-                .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
-                .build();
-    }
-
     private String generateNewUserId() {
         return UUID.randomUUID().toString();
     }

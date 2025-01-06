@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
@@ -107,7 +108,7 @@ class DynamoGoalTrackerDaoTest {
                 "id", AttributeValue.builder().s("existingId").build());
         when(dynamoDbClient.query(any(QueryRequest.class)))
                 .thenReturn(QueryResponse.builder()
-                        .items(existingItem)
+                        .items(List.of(existingItem))
                         .build());
 
         // Then
