@@ -38,6 +38,12 @@ UserEntity user = goalTrackerDao.getUser("userId");
 PlayerEntity player = goalTrackerDao.addPlayerToUser("userId", "playerName");
 ```
 
+### Getting All Players for a User
+
+```java
+List<PlayerEntity> players = goalTrackerDao.getPlayersForUser("userId");
+```
+
 ## API Reference
 
 ### UserEntity
@@ -101,9 +107,23 @@ PlayerEntity addPlayerToUser(String userId, String playerName)
 - **Parameters:**
   - `userId`: The ID of the user to add the player to
   - `playerName`: The name of the RuneScape player to add
-- **Returns:** The created or existing player entity
+- **Returns:** The created player entity
 - **Throws:**
   - `IllegalArgumentException`: If userId or playerName is null or empty
+
+#### getPlayersForUser
+
+Retrieves all players associated with a user.
+
+```java
+List<PlayerEntity> getPlayersForUser(String userId)
+```
+
+- **Parameters:**
+  - `userId`: The ID of the user to get players for
+- **Returns:** List of player entities associated with the user
+- **Throws:**
+  - `IllegalArgumentException`: If userId is null or empty
 
 ## Development
 

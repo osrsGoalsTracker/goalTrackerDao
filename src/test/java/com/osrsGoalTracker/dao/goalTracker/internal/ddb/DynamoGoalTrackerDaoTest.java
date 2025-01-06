@@ -51,7 +51,7 @@ class DynamoGoalTrackerDaoTest {
                 PutItemRequest putItemRequest = putItemCaptor.getValue();
                 Map<String, AttributeValue> item = putItemRequest.item();
                 assertThat(item.get("pk").s()).isEqualTo("USER#" + TEST_USER_ID);
-                assertThat(item.get("sk").s()).isEqualTo(SortKeyUtil.getPlayerMetadataSortKey(TEST_PLAYER_NAME));
+                assertThat(item.get("sk").s()).isEqualTo(SortKeyUtil.PLAYER_METADATA_PREFIX + TEST_PLAYER_NAME);
                 assertThat(item.get("name").s()).isEqualTo(TEST_PLAYER_NAME);
                 assertThat(item.get("createdAt").s()).isNotEmpty();
                 assertThat(item.get("updatedAt").s()).isNotEmpty();

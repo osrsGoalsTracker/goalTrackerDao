@@ -1,38 +1,44 @@
 package com.osrsGoalTracker.dao.goalTracker;
 
+import java.util.List;
+
 import com.osrsGoalTracker.dao.goalTracker.entity.PlayerEntity;
 import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
 
 /**
- * Interface for the GoalTrackerDao.
+ * Interface for accessing and modifying goal tracker data.
  */
 public interface GoalTrackerDao {
     /**
-     * Creates a new user in the database. If a user with the given email already
-     * exists, returns the existing user entity. Otherwise, generates a new UUID
-     * for the user ID, maps the incoming entity to a new entity, and creates the
-     * new user.
+     * Creates a new user.
      *
-     * @param user the user to create
-     * @return the created or existing user
+     * @param user The user entity to create
+     * @return The created user entity with generated ID and timestamps
      */
     UserEntity createUser(UserEntity user);
 
     /**
-     * Retrieves a user from the database.
+     * Retrieves a user by their ID.
      *
-     * @param userId the ID of the user to retrieve
-     * @return the retrieved user
+     * @param userId The ID of the user to retrieve
+     * @return The user entity
      */
     UserEntity getUser(String userId);
 
     /**
-     * Adds a RuneScape player to a user's account. If a player with the given name
-     * already exists for this user, returns the existing player entity.
+     * Adds a RuneScape player to a user's account.
      *
-     * @param userId     the ID of the user to add the player to
-     * @param playerName the name of the RuneScape player to add
-     * @return the created or existing player
+     * @param userId     The ID of the user to add the player to
+     * @param playerName The name of the RuneScape player to add
+     * @return The created player entity
      */
     PlayerEntity addPlayerToUser(String userId, String playerName);
+
+    /**
+     * Retrieves all players associated with a user.
+     *
+     * @param userId The ID of the user to get players for
+     * @return List of player entities associated with the user
+     */
+    List<PlayerEntity> getPlayersForUser(String userId);
 }

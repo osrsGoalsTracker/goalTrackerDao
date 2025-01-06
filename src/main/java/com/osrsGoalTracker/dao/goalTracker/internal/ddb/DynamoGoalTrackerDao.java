@@ -1,5 +1,7 @@
 package com.osrsGoalTracker.dao.goalTracker.internal.ddb;
 
+import java.util.List;
+
 import com.google.inject.Inject;
 import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
 import com.osrsGoalTracker.dao.goalTracker.entity.PlayerEntity;
@@ -56,5 +58,10 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
     @Override
     public PlayerEntity addPlayerToUser(String userId, String playerName) {
         return playerDao.addPlayerToUser(userId, playerName);
+    }
+
+    @Override
+    public List<PlayerEntity> getPlayersForUser(String userId) {
+        return playerDao.getPlayersForUser(userId);
     }
 }
