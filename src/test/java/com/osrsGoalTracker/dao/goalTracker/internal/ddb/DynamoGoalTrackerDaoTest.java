@@ -2,173 +2,86 @@ package com.osrsGoalTracker.dao.goalTracker.internal.ddb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Map;
 
-import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
-import com.osrsGoalTracker.dao.goalTracker.exception.DuplicateUserException;
-import com.osrsGoalTracker.dao.goalTracker.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.dao.goalTracker.entity.PlayerEntity;
+import com.osrsGoalTracker.dao.goalTracker.internal.ddb.util.SortKeyUtil;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
-@ExtendWith(MockitoExtension.class)
 class DynamoGoalTrackerDaoTest {
+        private static final String TEST_USER_ID = "testUserId";
+        private static final String TEST_PLAYER_NAME = "testPlayer";
+        private static final String TEST_TABLE_NAME = "GoalsTable-test";
 
-    private static final String TEST_USER_ID = "testUser123";
-    private static final String TEST_EMAIL = "test@example.com";
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
-    private static final String TEST_TABLE_NAME = "GoalsTable-dev";
+        @Mock
+        private DynamoDbClient dynamoDbClient;
 
-    @Mock
-    private DynamoDbClient dynamoDbClient;
+        private DynamoGoalTrackerDao goalsDao;
 
-    @Captor
-    private ArgumentCaptor<PutItemRequest> putItemRequestCaptor;
+        @BeforeEach
+        void setUp() {
+                System.setProperty("GOAL_TRACKER_TABLE_NAME", TEST_TABLE_NAME);
+                MockitoAnnotations.openMocks(this);
+                goalsDao = new DynamoGoalTrackerDao(dynamoDbClient);
+        }
 
-    @Captor
-    private ArgumentCaptor<GetItemRequest> getItemRequestCaptor;
+        @Test
+        void testAddPlayerToUserSuccess() {
+                PlayerEntity result = goalsDao.addPlayerToUser(TEST_USER_ID, TEST_PLAYER_NAME);
 
-    private DynamoGoalTrackerDao goalsDao;
+                assertThat(result.getName()).isEqualTo(TEST_PLAYER_NAME);
+                assertThat(result.getUserId()).isEqualTo(TEST_USER_ID);
+                assertThat(result.getCreatedAt()).isNotNull();
+                assertThat(result.getUpdatedAt()).isNotNull();
 
-    @BeforeEach
-    void setUp() {
-        System.setProperty("GOAL_TRACKER_TABLE_NAME", TEST_TABLE_NAME);
-        goalsDao = new DynamoGoalTrackerDao(dynamoDbClient);
-    }
+                ArgumentCaptor<PutItemRequest> putItemCaptor = ArgumentCaptor.forClass(PutItemRequest.class);
+                verify(dynamoDbClient).putItem(putItemCaptor.capture());
 
-    @Test
-    void testCreateUserSuccess() {
-        // Given
-        UserEntity userToCreate = UserEntity.builder()
-                .email(TEST_EMAIL)
-                .build();
+                PutItemRequest putItemRequest = putItemCaptor.getValue();
+                Map<String, AttributeValue> item = putItemRequest.item();
+                assertThat(item.get("pk").s()).isEqualTo("USER#" + TEST_USER_ID);
+                assertThat(item.get("sk").s()).isEqualTo(SortKeyUtil.getPlayerMetadataSortKey(TEST_PLAYER_NAME));
+                assertThat(item.get("name").s()).isEqualTo(TEST_PLAYER_NAME);
+                assertThat(item.get("createdAt").s()).isNotEmpty();
+                assertThat(item.get("updatedAt").s()).isNotEmpty();
+        }
 
-        // Mock query response for checkIfUserExists
-        when(dynamoDbClient.query(any(QueryRequest.class)))
-                .thenReturn(QueryResponse.builder().build());
+        @Test
+        void testAddPlayerToUserNullUserId() {
+                assertThatThrownBy(() -> goalsDao.addPlayerToUser(null, TEST_PLAYER_NAME))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("cannot be null or empty");
+        }
 
-        // Mock successful putItem response
-        when(dynamoDbClient.putItem(any(PutItemRequest.class)))
-                .thenReturn(PutItemResponse.builder().build());
+        @Test
+        void testAddPlayerToUserEmptyUserId() {
+                assertThatThrownBy(() -> goalsDao.addPlayerToUser("", TEST_PLAYER_NAME))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("cannot be null or empty");
+        }
 
-        // When
-        UserEntity createdUser = goalsDao.createUser(userToCreate);
+        @Test
+        void testAddPlayerToUserNullPlayerName() {
+                assertThatThrownBy(() -> goalsDao.addPlayerToUser(TEST_USER_ID, null))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("cannot be null or empty");
+        }
 
-        // Then
-        verify(dynamoDbClient).putItem(putItemRequestCaptor.capture());
-        PutItemRequest capturedRequest = putItemRequestCaptor.getValue();
-
-        assertThat(capturedRequest.tableName()).isEqualTo(TEST_TABLE_NAME);
-
-        Map<String, AttributeValue> item = capturedRequest.item();
-        assertThat(item.get("pk").s()).startsWith("USER#");
-        assertThat(item.get("sk").s()).isEqualTo("METADATA");
-        assertThat(item.get("id").s()).isNotEmpty();
-        assertThat(item.get("email").s()).isEqualTo(TEST_EMAIL);
-        assertThat(item.get("createdAt").s()).isNotEmpty();
-        assertThat(item.get("updatedAt").s()).isNotEmpty();
-
-        assertThat(createdUser.getUserId()).isNotEmpty();
-        assertThat(createdUser.getEmail()).isEqualTo(TEST_EMAIL);
-        assertThat(createdUser.getCreatedAt()).isNotNull();
-        assertThat(createdUser.getUpdatedAt()).isNotNull();
-    }
-
-    @Test
-    void testCreateUserDuplicateUser() {
-        // Given
-        UserEntity userToCreate = UserEntity.builder()
-                .email(TEST_EMAIL)
-                .build();
-
-        // Mock query response for checkIfUserExists to indicate user exists
-        Map<String, AttributeValue> existingItem = Map.of(
-                "email", AttributeValue.builder().s(TEST_EMAIL).build(),
-                "id", AttributeValue.builder().s("existingId").build());
-        when(dynamoDbClient.query(any(QueryRequest.class)))
-                .thenReturn(QueryResponse.builder()
-                        .items(List.of(existingItem))
-                        .build());
-
-        // Then
-        assertThatThrownBy(() -> goalsDao.createUser(userToCreate))
-                .isInstanceOf(DuplicateUserException.class)
-                .hasMessageContaining("User already exists with email: " + TEST_EMAIL);
-    }
-
-    @Test
-    void testCreateUserNull() {
-        assertThatThrownBy(() -> goalsDao.createUser(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("cannot be null");
-    }
-
-    @Test
-    void testGetUserSuccess() {
-        // Given
-        LocalDateTime now = LocalDateTime.now();
-        Map<String, AttributeValue> item = Map.of(
-                "id", AttributeValue.builder().s(TEST_USER_ID).build(),
-                "email", AttributeValue.builder().s(TEST_EMAIL).build(),
-                "createdAt", AttributeValue.builder().s(now.format(DATE_TIME_FORMATTER)).build(),
-                "updatedAt", AttributeValue.builder().s(now.format(DATE_TIME_FORMATTER)).build());
-
-        when(dynamoDbClient.getItem(any(GetItemRequest.class)))
-                .thenReturn(GetItemResponse.builder().item(item).build());
-
-        // When
-        UserEntity user = goalsDao.getUser(TEST_USER_ID);
-
-        // Then
-        verify(dynamoDbClient).getItem(getItemRequestCaptor.capture());
-        GetItemRequest capturedRequest = getItemRequestCaptor.getValue();
-
-        assertThat(capturedRequest.key().get("pk").s()).isEqualTo("USER#" + TEST_USER_ID);
-        assertThat(capturedRequest.key().get("sk").s()).isEqualTo("METADATA");
-
-        assertThat(user.getUserId()).isEqualTo(TEST_USER_ID);
-        assertThat(user.getEmail()).isEqualTo(TEST_EMAIL);
-        assertThat(user.getCreatedAt()).isEqualTo(now);
-        assertThat(user.getUpdatedAt()).isEqualTo(now);
-    }
-
-    @Test
-    void testGetUserNotFound() {
-        // Given
-        when(dynamoDbClient.getItem(any(GetItemRequest.class)))
-                .thenReturn(GetItemResponse.builder().build());
-
-        // Then
-        assertThatThrownBy(() -> goalsDao.getUser(TEST_USER_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("User not found");
-    }
-
-    @Test
-    void testGetUserNull() {
-        assertThatThrownBy(() -> goalsDao.getUser(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("cannot be null or empty");
-    }
+        @Test
+        void testAddPlayerToUserEmptyPlayerName() {
+                assertThatThrownBy(() -> goalsDao.addPlayerToUser(TEST_USER_ID, ""))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("cannot be null or empty");
+        }
 }

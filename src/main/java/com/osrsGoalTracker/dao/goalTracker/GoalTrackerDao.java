@@ -1,5 +1,6 @@
 package com.osrsGoalTracker.dao.goalTracker;
 
+import com.osrsGoalTracker.dao.goalTracker.entity.PlayerEntity;
 import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
 
 /**
@@ -24,4 +25,14 @@ public interface GoalTrackerDao {
      * @return the retrieved user
      */
     UserEntity getUser(String userId);
+
+    /**
+     * Adds a RuneScape player to a user's account. If a player with the given name
+     * already exists for this user, returns the existing player entity.
+     *
+     * @param userId     the ID of the user to add the player to
+     * @param playerName the name of the RuneScape player to add
+     * @return the created or existing player
+     */
+    PlayerEntity addPlayerToUser(String userId, String playerName);
 }

@@ -1,148 +1,124 @@
-# Goal Tracker DAO Library
+# OSRS Goal Tracker DAO
 
-A Java library for interacting with DynamoDB to manage OSRS goal tracking data. This library provides a clean abstraction over DynamoDB operations, handling the complexities of partition keys and sort keys internally.
-
-## Features
-
-- Seamless DynamoDB interaction
-- Type-safe entity models
-- Efficient data access patterns
-- Comprehensive test coverage
-
-## Requirements
-
-- JDK 21
-- Gradle 8.x
+A Java library for managing RuneScape player goals and progress tracking in DynamoDB.
 
 ## Installation
 
-First, add the JitPack repository to your build file:
+Add the following to your `build.gradle`:
 
 ```groovy
 repositories {
-    mavenCentral()
     maven { url 'https://jitpack.io' }
 }
-```
 
-Then, add the dependency:
-
-```groovy
 dependencies {
-    implementation 'com.github.osrsGoalTracker:goalDao:Tag'
+    implementation 'com.github.yourusername:osrsGoalTracker:VERSION'
 }
 ```
 
 ## Usage
 
-### Managing Users
-```java
-import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
-import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
+### Creating a User
 
-@Inject
-public YourClass(GoalTrackerDao goalDao) {
-    // Create a new user
-    UserEntity userToCreate = UserEntity.builder()
-        .email("user@example.com")
-        .build();
-    UserEntity newUser = goalDao.createUser(userToCreate);
-    // If a user with the given email already exists, the existing user entity is returned.
-    // Otherwise, a new user is created with a generated UUID for the user ID.
-    
-    // Get user metadata
-    UserEntity user = goalDao.getUser(newUser.getUserId());
-}
+```java
+UserEntity user = goalTrackerDao.createUser(UserEntity.builder()
+    .email("user@example.com")
+    .build());
+```
+
+### Getting a User
+
+```java
+UserEntity user = goalTrackerDao.getUser("userId");
+```
+
+### Adding a Player to a User
+
+```java
+PlayerEntity player = goalTrackerDao.addPlayerToUser("userId", "playerName");
 ```
 
 ## API Reference
 
-### Package Structure
+### UserEntity
 
-The library is organized under the following package structure:
-```
-com.osrsGoalTracker.dao.goalTracker
-├── GoalTrackerDao.java         # Main interface
-├── entity/                     # Public entity classes
-│   ├── AbstractEntity.java     # Base entity class
-│   └── UserEntity.java        # User entity
-├── exception/                  # Public exceptions
-│   ├── DuplicateUserException.java
-│   └── ResourceNotFoundException.java
-├── module/                     # Guice modules
-│   └── GoalTrackerDaoModule.java
-└── internal/                   # Implementation details
-    └── ddb/                    # DynamoDB implementation
-        ├── DynamoGoalTrackerDao.java
-        └── util/               # Internal utilities
-            └── SortKeyUtil.java
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| userId | String | Unique identifier for the user |
+| email | String | User's email address |
+| createdAt | LocalDateTime | When the user was created |
+| updatedAt | LocalDateTime | When the user was last updated |
 
-### Entities
+### PlayerEntity
 
-#### UserEntity
-Entity containing user data:
-```java
-{
-    String userId;           // Unique identifier
-    String email;           // Email address
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| name | String | RuneScape player name |
+| userId | String | ID of the user who owns this player |
+| createdAt | LocalDateTime | When the player was added |
+| updatedAt | LocalDateTime | When the player was last updated |
 
 ### Methods
 
 #### createUser
+
+Creates a new user in the database.
+
 ```java
-/**
- * Creates a new user in the system.
- *
- * @param user The UserEntity containing the user data
- * @return UserEntity containing the created user's data
- * @throws IllegalArgumentException if user is null or fields are empty
- * @throws DuplicateUserException if user already exists
- */
-UserEntity createUser(UserEntity user);
+UserEntity createUser(UserEntity user)
 ```
+
+- **Parameters:**
+  - `user`: The user entity to create (email is required)
+- **Returns:** The created user entity with generated ID and timestamps
+- **Throws:**
+  - `IllegalArgumentException`: If user is null or email is null/empty
+  - `DuplicateUserException`: If a user with the same email already exists
 
 #### getUser
-```java
-/**
- * Retrieves user metadata.
- *
- * @param userId The unique identifier of the user
- * @return UserEntity containing user metadata
- * @throws IllegalArgumentException if userId is null/empty
- * @throws ResourceNotFoundException if user doesn't exist
- */
-UserEntity getUser(String userId);
-```
 
-### Dependency Injection
-
-The library uses Guice for dependency injection:
+Retrieves a user from the database.
 
 ```java
-import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
-import com.osrsGoalTracker.dao.goalTracker.module.GoalTrackerDaoModule;
-
-Injector injector = Guice.createInjector(new GoalTrackerDaoModule());
-GoalTrackerDao goalDao = injector.getInstance(GoalTrackerDao.class);
+UserEntity getUser(String userId)
 ```
+
+- **Parameters:**
+  - `userId`: The ID of the user to retrieve
+- **Returns:** The user entity
+- **Throws:**
+  - `IllegalArgumentException`: If userId is null or empty
+  - `ResourceNotFoundException`: If user is not found
+
+#### addPlayerToUser
+
+Adds a RuneScape player to a user's account.
+
+```java
+PlayerEntity addPlayerToUser(String userId, String playerName)
+```
+
+- **Parameters:**
+  - `userId`: The ID of the user to add the player to
+  - `playerName`: The name of the RuneScape player to add
+- **Returns:** The created or existing player entity
+- **Throws:**
+  - `IllegalArgumentException`: If userId or playerName is null or empty
 
 ## Development
 
 ### Building
+
 ```bash
 ./gradlew build
 ```
 
 ### Testing
+
 ```bash
 ./gradlew test
 ```
 
-## License
+### Environment Variables
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+- `GOAL_TRACKER_TABLE_NAME`: Name of the DynamoDB table (required)
