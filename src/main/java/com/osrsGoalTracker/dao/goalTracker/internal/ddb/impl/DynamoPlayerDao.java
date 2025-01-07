@@ -65,7 +65,7 @@ public class DynamoPlayerDao {
     private Map<String, AttributeValue> createNewPlayerItem(String userId, String playerName, String timestamp) {
         Map<String, AttributeValue> item = new LinkedHashMap<>();
         item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
-        item.put(SK, AttributeValue.builder().s(SortKeyUtil.PLAYER_METADATA_PREFIX + playerName).build());
+        item.put(SK, AttributeValue.builder().s(SortKeyUtil.getPlayerMetadataSortKey() + "#" + playerName).build());
         item.put(NAME, AttributeValue.builder().s(playerName).build());
         item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
         item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
@@ -125,7 +125,7 @@ public class DynamoPlayerDao {
         Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
         expressionAttributeValues.put(":pk", AttributeValue.builder().s(USER_PREFIX + userId).build());
         expressionAttributeValues.put(":sk_prefix",
-                AttributeValue.builder().s(SortKeyUtil.PLAYER_METADATA_PREFIX).build());
+                AttributeValue.builder().s(SortKeyUtil.getPlayerMetadataSortKey()).build());
 
         QueryRequest queryRequest = QueryRequest.builder()
                 .tableName(tableName)
