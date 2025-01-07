@@ -11,9 +11,7 @@ import com.osrsGoalTracker.dao.goalTracker.exception.DuplicateUserException;
 import com.osrsGoalTracker.dao.goalTracker.exception.ResourceNotFoundException;
 import com.osrsGoalTracker.dao.goalTracker.internal.ddb.util.SortKeyUtil;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
@@ -27,9 +25,8 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
  * DynamoDB implementation for user-related operations.
  * Handles creating and retrieving user entities.
  */
+@Slf4j
 public class DynamoUserDao {
-    private static final Logger LOGGER = LogManager.getLogger(DynamoUserDao.class);
-
     private static final String PK = "pk";
     private static final String SK = "sk";
     private static final String USER_PREFIX = "USER#";
@@ -57,11 +54,11 @@ public class DynamoUserDao {
 
     private void validateUserEntity(UserEntity user) {
         if (user == null) {
-            LOGGER.warn("Attempted to create null user");
+            log.warn("Attempted to create null user");
             throw new IllegalArgumentException("User entity cannot be null");
         }
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
-            LOGGER.warn("Attempted to create user with null or empty email");
+            log.warn("Attempted to create user with null or empty email");
             throw new IllegalArgumentException("Email cannot be null or empty");
         }
     }
@@ -110,15 +107,15 @@ public class DynamoUserDao {
      * @throws DuplicateUserException   If a user with the same email already exists
      */
     public UserEntity createUser(UserEntity user) {
-        LOGGER.debug("Attempting to create user: {}", user);
+        log.debug("Attempting to create user: {}", user);
 
         validateUserEntity(user);
 
-        LOGGER.debug("Creating new user with email: {}", user.getEmail());
+        log.debug("Creating new user with email: {}", user.getEmail());
 
         Map<String, AttributeValue> existingItem = checkIfUserExists(user.getEmail());
         if (existingItem != null) {
-            LOGGER.warn("Attempted to create user with existing email: {}", user.getEmail());
+            log.warn("Attempted to create user with existing email: {}", user.getEmail());
             throw new DuplicateUserException("User already exists with email: " + user.getEmail());
         }
 
@@ -138,11 +135,11 @@ public class DynamoUserDao {
                             "#sk", SK))
                     .build();
 
-            LOGGER.debug("Putting new user item in DynamoDB with ID: {}", newUserId);
+            log.debug("Putting new user item in DynamoDB with ID: {}", newUserId);
             dynamoDbClient.putItem(putItemRequest);
-            LOGGER.info("Successfully created new user with ID: {} and email: {}", newUserId, user.getEmail());
+            log.info("Successfully created new user with ID: {} and email: {}", newUserId, user.getEmail());
         } catch (ConditionalCheckFailedException e) {
-            LOGGER.warn("Concurrent attempt to create user with email: {}", user.getEmail());
+            log.warn("Concurrent attempt to create user with email: {}", user.getEmail());
             throw new DuplicateUserException("User already exists with email: " + user.getEmail());
         }
 
@@ -163,10 +160,10 @@ public class DynamoUserDao {
      * @throws ResourceNotFoundException If user is not found
      */
     public UserEntity getUser(String userId) {
-        LOGGER.debug("Getting user with ID: {}", userId);
+        log.debug("Getting user with ID: {}", userId);
 
         if (userId == null || userId.trim().isEmpty()) {
-            LOGGER.warn("Attempted to get user with null or empty ID");
+            log.warn("Attempted to get user with null or empty ID");
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
 
@@ -184,7 +181,7 @@ public class DynamoUserDao {
 
         GetItemResponse response = dynamoDbClient.getItem(request);
         if (!response.hasItem()) {
-            LOGGER.warn("User not found with ID: {}", userId);
+            log.warn("User not found with ID: {}", userId);
             throw new ResourceNotFoundException("User not found with ID: " + userId);
         }
 
@@ -196,7 +193,7 @@ public class DynamoUserDao {
                 .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
                 .build();
 
-        LOGGER.debug("Successfully retrieved user: {}", user);
+        log.debug("Successfully retrieved user: {}", user);
         return user;
     }
 }

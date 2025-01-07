@@ -11,9 +11,7 @@ import java.util.stream.Collectors;
 import com.osrsGoalTracker.dao.goalTracker.entity.PlayerEntity;
 import com.osrsGoalTracker.dao.goalTracker.internal.ddb.util.SortKeyUtil;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
@@ -24,9 +22,8 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
  * DynamoDB implementation for player-related operations.
  * Handles adding players to user accounts.
  */
+@Slf4j
 public class DynamoPlayerDao {
-    private static final Logger LOGGER = LogManager.getLogger(DynamoPlayerDao.class);
-
     private static final String PK = "pk";
     private static final String SK = "sk";
     private static final String USER_PREFIX = "USER#";
@@ -53,11 +50,11 @@ public class DynamoPlayerDao {
 
     private void validateAddPlayerToUserInput(String userId, String playerName) {
         if (userId == null || userId.trim().isEmpty()) {
-            LOGGER.warn("Attempted to add player with null or empty user ID");
+            log.warn("Attempted to add player with null or empty user ID");
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
         if (playerName == null || playerName.trim().isEmpty()) {
-            LOGGER.warn("Attempted to add player with null or empty name");
+            log.warn("Attempted to add player with null or empty name");
             throw new IllegalArgumentException("Player name cannot be null or empty");
         }
     }
@@ -81,7 +78,7 @@ public class DynamoPlayerDao {
      * @throws IllegalArgumentException If userId or playerName is null or empty
      */
     public PlayerEntity addPlayerToUser(String userId, String playerName) {
-        LOGGER.debug("Attempting to add player {} to user {}", playerName, userId);
+        log.debug("Attempting to add player {} to user {}", playerName, userId);
 
         validateAddPlayerToUserInput(userId, playerName);
 
@@ -95,9 +92,9 @@ public class DynamoPlayerDao {
                 .item(item)
                 .build();
 
-        LOGGER.debug("Putting new player item in DynamoDB for user {} with name {}", userId, playerName);
+        log.debug("Putting new player item in DynamoDB for user {} with name {}", userId, playerName);
         dynamoDbClient.putItem(putItemRequest);
-        LOGGER.info("Successfully added player {} to user {}", playerName, userId);
+        log.info("Successfully added player {} to user {}", playerName, userId);
 
         return PlayerEntity.builder()
                 .name(playerName)
@@ -115,10 +112,10 @@ public class DynamoPlayerDao {
      * @throws IllegalArgumentException If userId is null or empty
      */
     public List<PlayerEntity> getPlayersForUser(String userId) {
-        LOGGER.debug("Getting players for user {}", userId);
+        log.debug("Getting players for user {}", userId);
 
         if (userId == null || userId.trim().isEmpty()) {
-            LOGGER.warn("Attempted to get players with null or empty user ID");
+            log.warn("Attempted to get players with null or empty user ID");
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
 
@@ -133,7 +130,7 @@ public class DynamoPlayerDao {
                 .expressionAttributeValues(expressionAttributeValues)
                 .build();
 
-        LOGGER.debug("Querying DynamoDB for players with user ID: {}", userId);
+        log.debug("Querying DynamoDB for players with user ID: {}", userId);
         QueryResponse response = dynamoDbClient.query(queryRequest);
 
         List<PlayerEntity> players = response.items().stream()
@@ -145,7 +142,7 @@ public class DynamoPlayerDao {
                         .build())
                 .collect(Collectors.toList());
 
-        LOGGER.info("Found {} players for user {}", players.size(), userId);
+        log.info("Found {} players for user {}", players.size(), userId);
         return players;
     }
 }
