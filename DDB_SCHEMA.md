@@ -59,13 +59,13 @@ This schema is designed to support a goal tracking and notification platform for
      ```
 
 #### 3. **Character Metadata**
-   - **Sort Key:** `PLAYER#METADATA#<character_name>`
+   - **Sort Key:** `CHARACTER#METADATA#<character_name>`
    - **Purpose:** This is the metadata for the RuneScape character. It is used to store information about the character such as their name, createdAt, and updatedAt.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "PLAYER#METADATA#Character123",
+       "SK": "CHARACTER#METADATA#Character123",
        "name": "Character123",
        "createdAt": "2025-01-01T00:00:00Z",
        "updatedAt": "2025-01-01T00:00:00Z"
@@ -73,13 +73,13 @@ This schema is designed to support a goal tracking and notification platform for
      ```
 
 #### 4. **Goal Metadata**
-   - **Sort Key:** `PLAYER#<character_name>#GOAL#METADATA#<goal_id>`
+   - **Sort Key:** `CHARACTER#<character_name>#GOAL#METADATA#<goal_id>`
    - **Purpose:** This is the metadata for the goal. It is used to store information about the goal such as the character name, skill/activity, targetXp, targetDate, notificationChannels, frequency, createdAt, and updatedAt.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "PLAYER#Character123#GOAL#METADATA#a4cae247-df47-45ec-a16d-5c51ec16fe23",
+       "SK": "CHARACTER#Character123#GOAL#METADATA#a4cae247-df47-45ec-a16d-5c51ec16fe23",
        "skill": "Woodcutting",
        "targetType": "xp",
        "targetValue": 13034431,
@@ -92,13 +92,13 @@ This schema is designed to support a goal tracking and notification platform for
      ```
 
 #### 5. **Progress Records**
-   - **Sort Key:** `PLAYER#<character_name>#GOAL#<goal_id>#<timestamp>`
+   - **Sort Key:** `CHARACTER#<character_name>#GOAL#<goal_id>#<timestamp>`
    - **Purpose:** This is the progress record for the goal. It is used to store information about the progress for the goal such as the progress value, timestamp, and createdAt.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "PLAYER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#2025-01-01T00:00:00Z",
+       "SK": "CHARACTER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#2025-01-01T00:00:00Z",
        "progressValue": 12000000,
        "timestamp": "2025-01-01T00:00:00Z",
        "createdAt": "2025-01-01T00:00:00Z",
@@ -107,13 +107,13 @@ This schema is designed to support a goal tracking and notification platform for
      ```
 
 #### 6. **Latest Progress**
-   - **Sort Key:** `PLAYER#<character_name>#GOAL#<goal_id>#LATEST`
+   - **Sort Key:** `CHARACTER#<character_name>#GOAL#<goal_id>#LATEST`
    - **Purpose:** This is the latest progress record for the goal. It is used to store information about the latest progress for the goal such as the progress value, timestamp, and createdAt. This provides a quick way to get the latest progress for a goal.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "PLAYER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#LATEST",
+       "SK": "CHARACTER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#LATEST",
        "progressValue": 12500000,
        "timestamp": "2025-01-02T00:00:00Z",
        "createdAt": "2025-01-02T00:00:00Z",
@@ -122,13 +122,13 @@ This schema is designed to support a goal tracking and notification platform for
      ```  
 
 #### 7. **Earliest Progress**
-   - **Sort Key:** `PLAYER#<character_name>#GOAL#<goal_id>#EARLIEST`
+   - **Sort Key:** `CHARACTER#<character_name>#GOAL#<goal_id>#EARLIEST`
    - **Purpose:** This is the earliest progress record for the goal. It is used to store information about the earliest progress for the goal such as the timestamp, and createdAt. This provides a quick way to get the earliest progress for a goal.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
-       "SK": "PLAYER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#EARLIEST",
+       "SK": "CHARACTER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#EARLIEST",
        "timestamp": "2025-01-01T00:00:00Z",
        "createdAt": "2025-01-01T00:00:00Z",
        "updatedAt": "2025-01-01T00:00:00Z"

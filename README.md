@@ -21,6 +21,9 @@ dependencies {
 ### Creating a User
 
 ```java
+import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
+import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
+
 UserEntity user = goalTrackerDao.createUser(UserEntity.builder()
     .email("user@example.com")
     .build());
@@ -29,19 +32,46 @@ UserEntity user = goalTrackerDao.createUser(UserEntity.builder()
 ### Getting a User
 
 ```java
+import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
+import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
+
 UserEntity user = goalTrackerDao.getUser("userId");
 ```
 
 ### Adding a Character to a User
 
 ```java
+import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
+import com.osrsGoalTracker.dao.goalTracker.entity.CharacterEntity;
+
 CharacterEntity character = goalTrackerDao.addCharacterToUser("userId", "characterName");
 ```
 
 ### Getting All Characters for a User
 
 ```java
+import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
+import com.osrsGoalTracker.dao.goalTracker.entity.CharacterEntity;
+
 List<CharacterEntity> characters = goalTrackerDao.getCharactersForUser("userId");
+```
+
+### Managing Notification Channels
+
+```java
+import com.osrsGoalTracker.notificationChannel.dao.NotificationChannelDao;
+import com.osrsGoalTracker.notificationChannel.dao.entity.NotificationChannelEntity;
+
+// Create a Discord notification channel
+NotificationChannelEntity channel = notificationChannelDao.createNotificationChannel("userId", 
+    NotificationChannelEntity.builder()
+        .channelType("DISCORD")
+        .identifier("discord-channel-id")
+        .isActive(true)
+        .build());
+
+// Get all notification channels for a user
+List<NotificationChannelEntity> channels = notificationChannelDao.getNotificationChannels("userId");
 ```
 
 ## API Reference
@@ -63,6 +93,16 @@ List<CharacterEntity> characters = goalTrackerDao.getCharactersForUser("userId")
 | userId | String | ID of the user who owns this character |
 | createdAt | LocalDateTime | When the character was added |
 | updatedAt | LocalDateTime | When the character was last updated |
+
+### NotificationChannelEntity
+
+| Field | Type | Description |
+|-------|------|-------------|
+| channelType | String | Type of notification channel (e.g., SMS, Discord) |
+| identifier | String | Channel-specific identifier (e.g., phone number, Discord channel ID) |
+| isActive | boolean | Whether the notification channel is active |
+| createdAt | LocalDateTime | When the channel was created |
+| updatedAt | LocalDateTime | When the channel was last updated |
 
 ### Methods
 
@@ -122,6 +162,35 @@ List<CharacterEntity> getCharactersForUser(String userId)
 - **Parameters:**
   - `userId`: The ID of the user to get characters for
 - **Returns:** List of character entities associated with the user
+- **Throws:**
+  - `IllegalArgumentException`: If userId is null or empty
+
+#### createNotificationChannel
+
+Creates a new notification channel for a user.
+
+```java
+NotificationChannelEntity createNotificationChannel(String userId, NotificationChannelEntity channel)
+```
+
+- **Parameters:**
+  - `userId`: The ID of the user to create the channel for
+  - `channel`: The notification channel entity to create (channelType, identifier, and isActive are required)
+- **Returns:** The created notification channel entity with timestamps
+- **Throws:**
+  - `IllegalArgumentException`: If userId is null/empty or channel validation fails
+
+#### getNotificationChannels
+
+Retrieves all notification channels for a user.
+
+```java
+List<NotificationChannelEntity> getNotificationChannels(String userId)
+```
+
+- **Parameters:**
+  - `userId`: The ID of the user to get channels for
+- **Returns:** List of notification channel entities associated with the user
 - **Throws:**
   - `IllegalArgumentException`: If userId is null or empty
 

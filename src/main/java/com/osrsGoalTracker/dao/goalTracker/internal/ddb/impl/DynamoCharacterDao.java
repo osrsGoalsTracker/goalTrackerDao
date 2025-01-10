@@ -62,8 +62,7 @@ public class DynamoCharacterDao {
     private Map<String, AttributeValue> createNewCharacterItem(String userId, String characterName, String timestamp) {
         Map<String, AttributeValue> item = new LinkedHashMap<>();
         item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
-        item.put(SK,
-                AttributeValue.builder().s(SortKeyUtil.getCharacterMetadataSortKey() + "#" + characterName).build());
+        item.put(SK, AttributeValue.builder().s(SortKeyUtil.getCharacterMetadataSortKey(characterName)).build());
         item.put(NAME, AttributeValue.builder().s(characterName).build());
         item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
         item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
@@ -123,7 +122,7 @@ public class DynamoCharacterDao {
         Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
         expressionAttributeValues.put(":pk", AttributeValue.builder().s(USER_PREFIX + userId).build());
         expressionAttributeValues.put(":sk_prefix",
-                AttributeValue.builder().s(SortKeyUtil.getCharacterMetadataSortKey()).build());
+                AttributeValue.builder().s(SortKeyUtil.CHARACTER_METADATA_PREFIX).build());
 
         QueryRequest queryRequest = QueryRequest.builder()
                 .tableName(tableName)

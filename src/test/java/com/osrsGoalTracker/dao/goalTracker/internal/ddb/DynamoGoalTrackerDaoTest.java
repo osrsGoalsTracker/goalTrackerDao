@@ -31,9 +31,8 @@ class DynamoGoalTrackerDaoTest {
 
         @BeforeEach
         void setUp() {
-                System.setProperty("GOAL_TRACKER_TABLE_NAME", TEST_TABLE_NAME);
                 MockitoAnnotations.openMocks(this);
-                goalsDao = new DynamoGoalTrackerDao(dynamoDbClient);
+                goalsDao = new DynamoGoalTrackerDao(dynamoDbClient, TEST_TABLE_NAME);
         }
 
         @Test
@@ -51,8 +50,7 @@ class DynamoGoalTrackerDaoTest {
                 PutItemRequest putItemRequest = putItemCaptor.getValue();
                 Map<String, AttributeValue> item = putItemRequest.item();
                 assertThat(item.get("pk").s()).isEqualTo("USER#" + TEST_USER_ID);
-                assertThat(item.get("sk").s()).isEqualTo(
-                                SortKeyUtil.getCharacterMetadataSortKey() + "#" + TEST_PLAYER_NAME);
+                assertThat(item.get("sk").s()).isEqualTo(SortKeyUtil.getCharacterMetadataSortKey(TEST_PLAYER_NAME));
                 assertThat(item.get("name").s()).isEqualTo(TEST_PLAYER_NAME);
                 assertThat(item.get("createdAt").s()).isNotEmpty();
                 assertThat(item.get("updatedAt").s()).isNotEmpty();
