@@ -21,11 +21,11 @@ public final class SortKeyUtil {
     }
 
     /**
-     * Gets the sort key for player metadata.
+     * Gets the sort key for character metadata.
      *
-     * @return The sort key for player metadata
+     * @return The sort key for character metadata
      */
-    public static String getPlayerMetadataSortKey() {
+    public static String getCharacterMetadataSortKey() {
         return PLAYER_METADATA_PREFIX;
     }
 }

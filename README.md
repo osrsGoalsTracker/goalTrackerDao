@@ -1,6 +1,6 @@
 # OSRS Goal Tracker DAO
 
-A Java library for managing RuneScape player goals and progress tracking in DynamoDB.
+A Java library for managing RuneScape character goals and progress tracking in DynamoDB.
 
 ## Installation
 
@@ -32,16 +32,16 @@ UserEntity user = goalTrackerDao.createUser(UserEntity.builder()
 UserEntity user = goalTrackerDao.getUser("userId");
 ```
 
-### Adding a Player to a User
+### Adding a Character to a User
 
 ```java
-PlayerEntity player = goalTrackerDao.addPlayerToUser("userId", "playerName");
+CharacterEntity character = goalTrackerDao.addCharacterToUser("userId", "characterName");
 ```
 
-### Getting All Players for a User
+### Getting All Characters for a User
 
 ```java
-List<PlayerEntity> players = goalTrackerDao.getPlayersForUser("userId");
+List<CharacterEntity> characters = goalTrackerDao.getCharactersForUser("userId");
 ```
 
 ## API Reference
@@ -55,14 +55,14 @@ List<PlayerEntity> players = goalTrackerDao.getPlayersForUser("userId");
 | createdAt | LocalDateTime | When the user was created |
 | updatedAt | LocalDateTime | When the user was last updated |
 
-### PlayerEntity
+### CharacterEntity
 
 | Field | Type | Description |
 |-------|------|-------------|
-| name | String | RuneScape player name |
-| userId | String | ID of the user who owns this player |
-| createdAt | LocalDateTime | When the player was added |
-| updatedAt | LocalDateTime | When the player was last updated |
+| name | String | RuneScape character name |
+| userId | String | ID of the user who owns this character |
+| createdAt | LocalDateTime | When the character was added |
+| updatedAt | LocalDateTime | When the character was last updated |
 
 ### Methods
 
@@ -96,32 +96,32 @@ UserEntity getUser(String userId)
   - `IllegalArgumentException`: If userId is null or empty
   - `ResourceNotFoundException`: If user is not found
 
-#### addPlayerToUser
+#### addCharacterToUser
 
-Adds a RuneScape player to a user's account.
+Adds a RuneScape character to a user's account.
 
 ```java
-PlayerEntity addPlayerToUser(String userId, String playerName)
+CharacterEntity addCharacterToUser(String userId, String characterName)
 ```
 
 - **Parameters:**
-  - `userId`: The ID of the user to add the player to
-  - `playerName`: The name of the RuneScape player to add
-- **Returns:** The created player entity
+  - `userId`: The ID of the user to add the character to
+  - `characterName`: The name of the RuneScape character to add
+- **Returns:** The created character entity
 - **Throws:**
-  - `IllegalArgumentException`: If userId or playerName is null or empty
+  - `IllegalArgumentException`: If userId or characterName is null or empty
 
-#### getPlayersForUser
+#### getCharactersForUser
 
-Retrieves all players associated with a user.
+Retrieves all characters associated with a user.
 
 ```java
-List<PlayerEntity> getPlayersForUser(String userId)
+List<CharacterEntity> getCharactersForUser(String userId)
 ```
 
 - **Parameters:**
-  - `userId`: The ID of the user to get players for
-- **Returns:** List of player entities associated with the user
+  - `userId`: The ID of the user to get characters for
+- **Returns:** List of character entities associated with the user
 - **Throws:**
   - `IllegalArgumentException`: If userId is null or empty
 

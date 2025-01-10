@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.google.inject.Inject;
 import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
-import com.osrsGoalTracker.dao.goalTracker.entity.PlayerEntity;
+import com.osrsGoalTracker.dao.goalTracker.entity.CharacterEntity;
 import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
-import com.osrsGoalTracker.dao.goalTracker.internal.ddb.impl.DynamoPlayerDao;
+import com.osrsGoalTracker.dao.goalTracker.internal.ddb.impl.DynamoCharacterDao;
 import com.osrsGoalTracker.dao.goalTracker.internal.ddb.impl.DynamoUserDao;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -17,12 +17,12 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
  */
 public class DynamoGoalTrackerDao implements GoalTrackerDao {
     private final DynamoUserDao userDao;
-    private final DynamoPlayerDao playerDao;
+    private final DynamoCharacterDao characterDao;
 
     /**
      * Constructor for DynamoGoalTrackerDao.
      * Uses Guice for dependency injection of the DynamoDB client.
-     * Creates specialized DAOs for user and player operations.
+     * Creates specialized DAOs for user and character operations.
      *
      * @param dynamoDbClient The AWS DynamoDB client
      */
@@ -30,7 +30,7 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
     public DynamoGoalTrackerDao(DynamoDbClient dynamoDbClient) {
         String tableName = getTableName();
         this.userDao = new DynamoUserDao(dynamoDbClient, tableName);
-        this.playerDao = new DynamoPlayerDao(dynamoDbClient, tableName);
+        this.characterDao = new DynamoCharacterDao(dynamoDbClient, tableName);
     }
 
     private static String getTableName() {
@@ -56,12 +56,12 @@ public class DynamoGoalTrackerDao implements GoalTrackerDao {
     }
 
     @Override
-    public PlayerEntity addPlayerToUser(String userId, String playerName) {
-        return playerDao.addPlayerToUser(userId, playerName);
+    public CharacterEntity addCharacterToUser(String userId, String characterName) {
+        return characterDao.addCharacterToUser(userId, characterName);
     }
 
     @Override
-    public List<PlayerEntity> getPlayersForUser(String userId) {
-        return playerDao.getPlayersForUser(userId);
+    public List<CharacterEntity> getCharactersForUser(String userId) {
+        return characterDao.getCharactersForUser(userId);
     }
 }

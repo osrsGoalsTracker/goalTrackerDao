@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.osrsGoalTracker.dao.goalTracker.entity.PlayerEntity;
+import com.osrsGoalTracker.dao.goalTracker.entity.CharacterEntity;
 import com.osrsGoalTracker.dao.goalTracker.internal.ddb.util.SortKeyUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +19,11 @@ import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 /**
- * DynamoDB implementation for player-related operations.
- * Handles adding players to user accounts.
+ * DynamoDB implementation for character-related operations.
+ * Handles adding characters to user accounts.
  */
 @Slf4j
-public class DynamoPlayerDao {
+public class DynamoCharacterDao {
     private static final String PK = "pk";
     private static final String SK = "sk";
     private static final String USER_PREFIX = "USER#";
@@ -38,66 +38,67 @@ public class DynamoPlayerDao {
     private final String tableName;
 
     /**
-     * Constructor for DynamoPlayerDao.
+     * Constructor for DynamoCharacterDao.
      *
      * @param dynamoDbClient The AWS DynamoDB client
      * @param tableName      The name of the DynamoDB table
      */
-    public DynamoPlayerDao(DynamoDbClient dynamoDbClient, String tableName) {
+    public DynamoCharacterDao(DynamoDbClient dynamoDbClient, String tableName) {
         this.dynamoDbClient = dynamoDbClient;
         this.tableName = tableName;
     }
 
-    private void validateAddPlayerToUserInput(String userId, String playerName) {
+    private void validateAddCharacterToUserInput(String userId, String characterName) {
         if (userId == null || userId.trim().isEmpty()) {
-            log.warn("Attempted to add player with null or empty user ID");
+            log.warn("Attempted to add character with null or empty user ID");
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
-        if (playerName == null || playerName.trim().isEmpty()) {
-            log.warn("Attempted to add player with null or empty name");
-            throw new IllegalArgumentException("Player name cannot be null or empty");
+        if (characterName == null || characterName.trim().isEmpty()) {
+            log.warn("Attempted to add character with null or empty name");
+            throw new IllegalArgumentException("Character name cannot be null or empty");
         }
     }
 
-    private Map<String, AttributeValue> createNewPlayerItem(String userId, String playerName, String timestamp) {
+    private Map<String, AttributeValue> createNewCharacterItem(String userId, String characterName, String timestamp) {
         Map<String, AttributeValue> item = new LinkedHashMap<>();
         item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
-        item.put(SK, AttributeValue.builder().s(SortKeyUtil.getPlayerMetadataSortKey() + "#" + playerName).build());
-        item.put(NAME, AttributeValue.builder().s(playerName).build());
+        item.put(SK,
+                AttributeValue.builder().s(SortKeyUtil.getCharacterMetadataSortKey() + "#" + characterName).build());
+        item.put(NAME, AttributeValue.builder().s(characterName).build());
         item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
         item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
         return item;
     }
 
     /**
-     * Adds a RuneScape player to a user's account.
+     * Adds a RuneScape character to a user's account.
      *
-     * @param userId     The ID of the user to add the player to
-     * @param playerName The name of the RuneScape player to add
-     * @return The created player entity
-     * @throws IllegalArgumentException If userId or playerName is null or empty
+     * @param userId        The ID of the user to add the character to
+     * @param characterName The name of the RuneScape character to add
+     * @return The created character entity
+     * @throws IllegalArgumentException If userId or characterName is null or empty
      */
-    public PlayerEntity addPlayerToUser(String userId, String playerName) {
-        log.debug("Attempting to add player {} to user {}", playerName, userId);
+    public CharacterEntity addCharacterToUser(String userId, String characterName) {
+        log.debug("Attempting to add character {} to user {}", characterName, userId);
 
-        validateAddPlayerToUserInput(userId, playerName);
+        validateAddCharacterToUserInput(userId, characterName);
 
         LocalDateTime now = LocalDateTime.now();
         String timestamp = now.format(DATE_TIME_FORMATTER);
 
-        Map<String, AttributeValue> item = createNewPlayerItem(userId, playerName, timestamp);
+        Map<String, AttributeValue> item = createNewCharacterItem(userId, characterName, timestamp);
 
         PutItemRequest putItemRequest = PutItemRequest.builder()
                 .tableName(tableName)
                 .item(item)
                 .build();
 
-        log.debug("Putting new player item in DynamoDB for user {} with name {}", userId, playerName);
+        log.debug("Putting new character item in DynamoDB for user {} with name {}", userId, characterName);
         dynamoDbClient.putItem(putItemRequest);
-        log.info("Successfully added player {} to user {}", playerName, userId);
+        log.info("Successfully added character {} to user {}", characterName, userId);
 
-        return PlayerEntity.builder()
-                .name(playerName)
+        return CharacterEntity.builder()
+                .name(characterName)
                 .userId(userId)
                 .createdAt(now)
                 .updatedAt(now)
@@ -105,24 +106,24 @@ public class DynamoPlayerDao {
     }
 
     /**
-     * Retrieves all players associated with a user.
+     * Retrieves all characters associated with a user.
      *
-     * @param userId The ID of the user to get players for
-     * @return List of player entities associated with the user
+     * @param userId The ID of the user to get characters for
+     * @return List of character entities associated with the user
      * @throws IllegalArgumentException If userId is null or empty
      */
-    public List<PlayerEntity> getPlayersForUser(String userId) {
-        log.debug("Getting players for user {}", userId);
+    public List<CharacterEntity> getCharactersForUser(String userId) {
+        log.debug("Getting characters for user {}", userId);
 
         if (userId == null || userId.trim().isEmpty()) {
-            log.warn("Attempted to get players with null or empty user ID");
+            log.warn("Attempted to get characters with null or empty user ID");
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
 
         Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
         expressionAttributeValues.put(":pk", AttributeValue.builder().s(USER_PREFIX + userId).build());
         expressionAttributeValues.put(":sk_prefix",
-                AttributeValue.builder().s(SortKeyUtil.getPlayerMetadataSortKey()).build());
+                AttributeValue.builder().s(SortKeyUtil.getCharacterMetadataSortKey()).build());
 
         QueryRequest queryRequest = QueryRequest.builder()
                 .tableName(tableName)
@@ -130,11 +131,11 @@ public class DynamoPlayerDao {
                 .expressionAttributeValues(expressionAttributeValues)
                 .build();
 
-        log.debug("Querying DynamoDB for players with user ID: {}", userId);
+        log.debug("Querying DynamoDB for characters with user ID: {}", userId);
         QueryResponse response = dynamoDbClient.query(queryRequest);
 
-        List<PlayerEntity> players = response.items().stream()
-                .map(item -> PlayerEntity.builder()
+        List<CharacterEntity> characters = response.items().stream()
+                .map(item -> CharacterEntity.builder()
                         .userId(userId)
                         .name(item.get(NAME).s())
                         .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
@@ -142,7 +143,7 @@ public class DynamoPlayerDao {
                         .build())
                 .collect(Collectors.toList());
 
-        log.info("Found {} players for user {}", players.size(), userId);
-        return players;
+        log.info("Found {} characters for user {}", characters.size(), userId);
+        return characters;
     }
 }

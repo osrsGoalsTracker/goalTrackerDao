@@ -6,7 +6,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Map;
 
-import com.osrsGoalTracker.dao.goalTracker.entity.PlayerEntity;
+import com.osrsGoalTracker.dao.goalTracker.entity.CharacterEntity;
 import com.osrsGoalTracker.dao.goalTracker.internal.ddb.util.SortKeyUtil;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 class DynamoGoalTrackerDaoTest {
         private static final String TEST_USER_ID = "testUserId";
-        private static final String TEST_PLAYER_NAME = "testPlayer";
+        private static final String TEST_PLAYER_NAME = "testCharacter";
         private static final String TEST_TABLE_NAME = "GoalsTable-test";
 
         @Mock
@@ -37,8 +37,8 @@ class DynamoGoalTrackerDaoTest {
         }
 
         @Test
-        void testAddPlayerToUserSuccess() {
-                PlayerEntity result = goalsDao.addPlayerToUser(TEST_USER_ID, TEST_PLAYER_NAME);
+        void testAddCharacterToUserSuccess() {
+                CharacterEntity result = goalsDao.addCharacterToUser(TEST_USER_ID, TEST_PLAYER_NAME);
 
                 assertThat(result.getName()).isEqualTo(TEST_PLAYER_NAME);
                 assertThat(result.getUserId()).isEqualTo(TEST_USER_ID);
@@ -52,36 +52,36 @@ class DynamoGoalTrackerDaoTest {
                 Map<String, AttributeValue> item = putItemRequest.item();
                 assertThat(item.get("pk").s()).isEqualTo("USER#" + TEST_USER_ID);
                 assertThat(item.get("sk").s()).isEqualTo(
-                        SortKeyUtil.getPlayerMetadataSortKey() + "#" + TEST_PLAYER_NAME);
+                                SortKeyUtil.getCharacterMetadataSortKey() + "#" + TEST_PLAYER_NAME);
                 assertThat(item.get("name").s()).isEqualTo(TEST_PLAYER_NAME);
                 assertThat(item.get("createdAt").s()).isNotEmpty();
                 assertThat(item.get("updatedAt").s()).isNotEmpty();
         }
 
         @Test
-        void testAddPlayerToUserNullUserId() {
-                assertThatThrownBy(() -> goalsDao.addPlayerToUser(null, TEST_PLAYER_NAME))
+        void testAddCharacterToUserNullUserId() {
+                assertThatThrownBy(() -> goalsDao.addCharacterToUser(null, TEST_PLAYER_NAME))
                                 .isInstanceOf(IllegalArgumentException.class)
                                 .hasMessageContaining("cannot be null or empty");
         }
 
         @Test
-        void testAddPlayerToUserEmptyUserId() {
-                assertThatThrownBy(() -> goalsDao.addPlayerToUser("", TEST_PLAYER_NAME))
+        void testAddCharacterToUserEmptyUserId() {
+                assertThatThrownBy(() -> goalsDao.addCharacterToUser("", TEST_PLAYER_NAME))
                                 .isInstanceOf(IllegalArgumentException.class)
                                 .hasMessageContaining("cannot be null or empty");
         }
 
         @Test
-        void testAddPlayerToUserNullPlayerName() {
-                assertThatThrownBy(() -> goalsDao.addPlayerToUser(TEST_USER_ID, null))
+        void testAddCharacterToUserNullCharacterName() {
+                assertThatThrownBy(() -> goalsDao.addCharacterToUser(TEST_USER_ID, null))
                                 .isInstanceOf(IllegalArgumentException.class)
                                 .hasMessageContaining("cannot be null or empty");
         }
 
         @Test
-        void testAddPlayerToUserEmptyPlayerName() {
-                assertThatThrownBy(() -> goalsDao.addPlayerToUser(TEST_USER_ID, ""))
+        void testAddCharacterToUserEmptyCharacterName() {
+                assertThatThrownBy(() -> goalsDao.addCharacterToUser(TEST_USER_ID, ""))
                                 .isInstanceOf(IllegalArgumentException.class)
                                 .hasMessageContaining("cannot be null or empty");
         }
