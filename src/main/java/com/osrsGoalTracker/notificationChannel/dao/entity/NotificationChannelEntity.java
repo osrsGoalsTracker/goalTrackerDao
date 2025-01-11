@@ -1,6 +1,6 @@
 package com.osrsGoalTracker.notificationChannel.dao.entity;
 
-import com.osrsGoalTracker.dao.goalTracker.entity.AbstractEntity;
+import com.osrsGoalTracker.shared.dao.entity.AbstractEntity;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

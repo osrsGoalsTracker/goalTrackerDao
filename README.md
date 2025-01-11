@@ -18,49 +18,45 @@ dependencies {
 
 ## Usage
 
-### Creating a User
+### User Management
 
 ```java
-import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
-import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
+import com.osrsGoalTracker.user.dao.UserDao;
+import com.osrsGoalTracker.user.dao.entity.UserEntity;
+import com.osrsGoalTracker.shared.dao.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.user.dao.exception.DuplicateUserException;
 
-UserEntity user = goalTrackerDao.createUser(UserEntity.builder()
+// Create a user
+UserEntity user = userDao.createUser(UserEntity.builder()
     .email("user@example.com")
     .build());
+
+// Get a user
+UserEntity user = userDao.getUser("userId");
 ```
 
-### Getting a User
+### Character Management
 
 ```java
-import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
-import com.osrsGoalTracker.dao.goalTracker.entity.UserEntity;
+import com.osrsGoalTracker.character.dao.CharacterDao;
+import com.osrsGoalTracker.character.dao.entity.CharacterEntity;
+import com.osrsGoalTracker.shared.dao.exception.ResourceNotFoundException;
+import java.util.List;
 
-UserEntity user = goalTrackerDao.getUser("userId");
+// Add a character to a user
+CharacterEntity character = characterDao.addCharacterToUser("userId", "characterName");
+
+// Get all characters for a user
+List<CharacterEntity> characters = characterDao.getCharactersForUser("userId");
 ```
 
-### Adding a Character to a User
-
-```java
-import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
-import com.osrsGoalTracker.dao.goalTracker.entity.CharacterEntity;
-
-CharacterEntity character = goalTrackerDao.addCharacterToUser("userId", "characterName");
-```
-
-### Getting All Characters for a User
-
-```java
-import com.osrsGoalTracker.dao.goalTracker.GoalTrackerDao;
-import com.osrsGoalTracker.dao.goalTracker.entity.CharacterEntity;
-
-List<CharacterEntity> characters = goalTrackerDao.getCharactersForUser("userId");
-```
-
-### Managing Notification Channels
+### Notification Channel Management
 
 ```java
 import com.osrsGoalTracker.notificationChannel.dao.NotificationChannelDao;
 import com.osrsGoalTracker.notificationChannel.dao.entity.NotificationChannelEntity;
+import com.osrsGoalTracker.shared.dao.exception.ResourceNotFoundException;
+import java.util.List;
 
 // Create a Discord notification channel
 NotificationChannelEntity channel = notificationChannelDao.createNotificationChannel("userId", 
@@ -72,6 +68,54 @@ NotificationChannelEntity channel = notificationChannelDao.createNotificationCha
 
 // Get all notification channels for a user
 List<NotificationChannelEntity> channels = notificationChannelDao.getNotificationChannels("userId");
+```
+
+## Dependency Injection Setup
+
+This library is designed to work with Guice dependency injection but does not provide DI modules. Instead, create your own module in your application:
+
+```java
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.osrsGoalTracker.user.dao.UserDao;
+import com.osrsGoalTracker.user.dao.impl.DynamoUserDao;
+import com.osrsGoalTracker.character.dao.CharacterDao;
+import com.osrsGoalTracker.character.dao.impl.DynamoCharacterDao;
+import com.osrsGoalTracker.notificationChannel.dao.NotificationChannelDao;
+import com.osrsGoalTracker.notificationChannel.dao.impl.DynamoNotificationChannelDao;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+
+public class DaoModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        // Bind your DAO implementations
+        bind(UserDao.class).to(DynamoUserDao.class);
+        bind(CharacterDao.class).to(DynamoCharacterDao.class);
+        bind(NotificationChannelDao.class).to(DynamoNotificationChannelDao.class);
+    }
+
+    @Provides
+    @Singleton
+    DynamoDbClient provideDynamoDbClient() {
+        return DynamoDbClient.builder()
+                .region(Region.of(System.getenv("AWS_REGION")))
+                .build();
+    }
+}
+```
+
+Then you can inject the DAOs where needed:
+```java
+@Inject
+private UserDao userDao;
+
+@Inject
+private CharacterDao characterDao;
+
+@Inject
+private NotificationChannelDao notificationChannelDao;
 ```
 
 ## API Reference
@@ -104,96 +148,6 @@ List<NotificationChannelEntity> channels = notificationChannelDao.getNotificatio
 | createdAt | LocalDateTime | When the channel was created |
 | updatedAt | LocalDateTime | When the channel was last updated |
 
-### Methods
-
-#### createUser
-
-Creates a new user in the database.
-
-```java
-UserEntity createUser(UserEntity user)
-```
-
-- **Parameters:**
-  - `user`: The user entity to create (email is required)
-- **Returns:** The created user entity with generated ID and timestamps
-- **Throws:**
-  - `IllegalArgumentException`: If user is null or email is null/empty
-  - `DuplicateUserException`: If a user with the same email already exists
-
-#### getUser
-
-Retrieves a user from the database.
-
-```java
-UserEntity getUser(String userId)
-```
-
-- **Parameters:**
-  - `userId`: The ID of the user to retrieve
-- **Returns:** The user entity
-- **Throws:**
-  - `IllegalArgumentException`: If userId is null or empty
-  - `ResourceNotFoundException`: If user is not found
-
-#### addCharacterToUser
-
-Adds a RuneScape character to a user's account.
-
-```java
-CharacterEntity addCharacterToUser(String userId, String characterName)
-```
-
-- **Parameters:**
-  - `userId`: The ID of the user to add the character to
-  - `characterName`: The name of the RuneScape character to add
-- **Returns:** The created character entity
-- **Throws:**
-  - `IllegalArgumentException`: If userId or characterName is null or empty
-
-#### getCharactersForUser
-
-Retrieves all characters associated with a user.
-
-```java
-List<CharacterEntity> getCharactersForUser(String userId)
-```
-
-- **Parameters:**
-  - `userId`: The ID of the user to get characters for
-- **Returns:** List of character entities associated with the user
-- **Throws:**
-  - `IllegalArgumentException`: If userId is null or empty
-
-#### createNotificationChannel
-
-Creates a new notification channel for a user.
-
-```java
-NotificationChannelEntity createNotificationChannel(String userId, NotificationChannelEntity channel)
-```
-
-- **Parameters:**
-  - `userId`: The ID of the user to create the channel for
-  - `channel`: The notification channel entity to create (channelType, identifier, and isActive are required)
-- **Returns:** The created notification channel entity with timestamps
-- **Throws:**
-  - `IllegalArgumentException`: If userId is null/empty or channel validation fails
-
-#### getNotificationChannels
-
-Retrieves all notification channels for a user.
-
-```java
-List<NotificationChannelEntity> getNotificationChannels(String userId)
-```
-
-- **Parameters:**
-  - `userId`: The ID of the user to get channels for
-- **Returns:** List of notification channel entities associated with the user
-- **Throws:**
-  - `IllegalArgumentException`: If userId is null or empty
-
 ## Development
 
 ### Building
@@ -210,4 +164,5 @@ List<NotificationChannelEntity> getNotificationChannels(String userId)
 
 ### Environment Variables
 
+- `AWS_REGION`: AWS region for DynamoDB (required)
 - `GOAL_TRACKER_TABLE_NAME`: Name of the DynamoDB table (required)
