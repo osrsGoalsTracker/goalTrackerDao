@@ -31,7 +31,7 @@ public class DynamoUserDao implements UserDao {
     private static final String SK = "sk";
     private static final String USER_PREFIX = "USER#";
 
-    private static final String ID = "id";
+    private static final String USER_ID = "userId";
     private static final String EMAIL = "email";
     private static final String CREATED_AT = "createdAt";
     private static final String UPDATED_AT = "updatedAt";
@@ -89,7 +89,7 @@ public class DynamoUserDao implements UserDao {
         Map<String, AttributeValue> item = new LinkedHashMap<>();
         item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
         item.put(SK, AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
-        item.put(ID, AttributeValue.builder().s(userId).build());
+        item.put(USER_ID, AttributeValue.builder().s(userId).build());
         item.put(EMAIL, AttributeValue.builder().s(email).build());
         item.put(CREATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
         item.put(UPDATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
@@ -183,7 +183,7 @@ public class DynamoUserDao implements UserDao {
 
         Map<String, AttributeValue> item = response.item();
         return UserEntity.builder()
-                .userId(item.get(ID).s())
+                .userId(item.get(USER_ID).s())
                 .email(item.get(EMAIL).s())
                 .createdAt(Instant.parse(item.get(CREATED_AT).s()))
                 .updatedAt(Instant.parse(item.get(UPDATED_AT).s()))
