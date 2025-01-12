@@ -1,6 +1,6 @@
 package com.osrsGoalTracker.shared.dao.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,8 +16,8 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public abstract class AbstractEntity {
     private String userId;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     @Override
     public String toString() {

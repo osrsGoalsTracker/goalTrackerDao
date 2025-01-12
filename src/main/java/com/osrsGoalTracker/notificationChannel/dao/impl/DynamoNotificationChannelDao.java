@@ -1,7 +1,6 @@
 package com.osrsGoalTracker.notificationChannel.dao.impl;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,14 +27,12 @@ public class DynamoNotificationChannelDao implements NotificationChannelDao {
     private static final String PK = "pk";
     private static final String SK = "sk";
     private static final String USER_PREFIX = "USER#";
-
+    private static final String USER_ID = "userId";
     private static final String CHANNEL_TYPE = "channelType";
     private static final String IDENTIFIER = "identifier";
     private static final String IS_ACTIVE = "isActive";
     private static final String CREATED_AT = "createdAt";
     private static final String UPDATED_AT = "updatedAt";
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     private final DynamoDbClient dynamoDbClient;
     private final String tableName;
@@ -51,10 +48,14 @@ public class DynamoNotificationChannelDao implements NotificationChannelDao {
         this.tableName = tableName;
     }
 
-    private void validateNotificationChannel(NotificationChannelEntity channel) {
+    private void validateCreateNotificationChannelInput(String userId, NotificationChannelEntity channel) {
+        if (userId == null || userId.trim().isEmpty()) {
+            log.warn("Attempted to create notification channel with null or empty user ID");
+            throw new IllegalArgumentException("UserId cannot be null or empty");
+        }
         if (channel == null) {
             log.warn("Attempted to create null notification channel");
-            throw new IllegalArgumentException("Notification channel entity cannot be null");
+            throw new IllegalArgumentException("Notification channel cannot be null");
         }
         if (channel.getChannelType() == null || channel.getChannelType().trim().isEmpty()) {
             log.warn("Attempted to create notification channel with null or empty channel type");
@@ -64,6 +65,21 @@ public class DynamoNotificationChannelDao implements NotificationChannelDao {
             log.warn("Attempted to create notification channel with null or empty identifier");
             throw new IllegalArgumentException("Identifier cannot be null or empty");
         }
+    }
+
+    private Map<String, AttributeValue> createNewChannelItem(String userId, NotificationChannelEntity channel,
+            Instant timestamp) {
+        Map<String, AttributeValue> item = new LinkedHashMap<>();
+        item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
+        item.put(SK, AttributeValue.builder()
+                .s(SortKeyUtil.getNotificationChannelSortKey(channel.getChannelType())).build());
+        item.put(CHANNEL_TYPE, AttributeValue.builder().s(channel.getChannelType()).build());
+        item.put(IDENTIFIER, AttributeValue.builder().s(channel.getIdentifier()).build());
+        item.put(IS_ACTIVE, AttributeValue.builder().bool(channel.isActive()).build());
+        item.put(CREATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
+        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
+        item.put(USER_ID, AttributeValue.builder().s(userId).build());
+        return item;
     }
 
     /**
@@ -76,36 +92,22 @@ public class DynamoNotificationChannelDao implements NotificationChannelDao {
      *                                  validation fails
      */
     public NotificationChannelEntity createNotificationChannel(String userId, NotificationChannelEntity channel) {
-        log.debug("Creating notification channel for user {}: {}", userId, channel);
+        log.debug("Attempting to create notification channel for user: {}", userId);
 
-        if (userId == null || userId.trim().isEmpty()) {
-            log.warn("Attempted to create notification channel with null or empty user ID");
-            throw new IllegalArgumentException("UserId cannot be null or empty");
-        }
+        validateCreateNotificationChannelInput(userId, channel);
 
-        validateNotificationChannel(channel);
+        Instant now = Instant.now();
 
-        LocalDateTime now = LocalDateTime.now();
-        String timestamp = now.format(DATE_TIME_FORMATTER);
-
-        Map<String, AttributeValue> item = new LinkedHashMap<>();
-        item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
-        item.put(SK, AttributeValue.builder().s(SortKeyUtil.getNotificationChannelSortKey(channel.getChannelType()))
-                .build());
-        item.put(CHANNEL_TYPE, AttributeValue.builder().s(channel.getChannelType()).build());
-        item.put(IDENTIFIER, AttributeValue.builder().s(channel.getIdentifier()).build());
-        item.put(IS_ACTIVE, AttributeValue.builder().bool(channel.isActive()).build());
-        item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
-        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
+        Map<String, AttributeValue> item = createNewChannelItem(userId, channel, now);
 
         PutItemRequest putItemRequest = PutItemRequest.builder()
                 .tableName(tableName)
                 .item(item)
                 .build();
 
-        log.debug("Putting new notification channel in DynamoDB for user: {}", userId);
+        log.debug("Putting new notification channel item in DynamoDB for user {}", userId);
         dynamoDbClient.putItem(putItemRequest);
-        log.info("Successfully created notification channel for user {} of type {}", userId, channel.getChannelType());
+        log.info("Successfully created notification channel for user {}", userId);
 
         return NotificationChannelEntity.builder()
                 .userId(userId)
@@ -148,12 +150,12 @@ public class DynamoNotificationChannelDao implements NotificationChannelDao {
 
         for (Map<String, AttributeValue> item : response.items()) {
             channels.add(NotificationChannelEntity.builder()
-                    .userId(userId)
+                    .userId(item.get(USER_ID).s())
                     .channelType(item.get(CHANNEL_TYPE).s())
                     .identifier(item.get(IDENTIFIER).s())
                     .isActive(item.get(IS_ACTIVE).bool())
-                    .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
-                    .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
+                    .createdAt(Instant.parse(item.get(CREATED_AT).s()))
+                    .updatedAt(Instant.parse(item.get(UPDATED_AT).s()))
                     .build());
         }
 

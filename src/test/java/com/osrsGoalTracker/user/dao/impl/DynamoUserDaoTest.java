@@ -6,8 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 
@@ -38,7 +37,6 @@ class DynamoUserDaoTest {
     private static final String TABLE_NAME = "test-table";
     private static final String TEST_EMAIL = "test@example.com";
     private static final String TEST_USER_ID = "test-user-id";
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     @Mock
     private DynamoDbClient dynamoDbClient;
@@ -148,14 +146,13 @@ class DynamoUserDaoTest {
     @Test
     void testGetUserWithExistingUserReturnsUser() {
         // Given
-        LocalDateTime now = LocalDateTime.now();
-        String timestamp = now.format(DATE_TIME_FORMATTER);
+        Instant now = Instant.now();
 
         Map<String, AttributeValue> item = Map.of(
                 "id", AttributeValue.builder().s(TEST_USER_ID).build(),
                 "email", AttributeValue.builder().s(TEST_EMAIL).build(),
-                "createdAt", AttributeValue.builder().s(timestamp).build(),
-                "updatedAt", AttributeValue.builder().s(timestamp).build());
+                "createdAt", AttributeValue.builder().s(now.toString()).build(),
+                "updatedAt", AttributeValue.builder().s(now.toString()).build());
 
         when(dynamoDbClient.getItem(any(GetItemRequest.class)))
                 .thenReturn(GetItemResponse.builder().item(item).build());

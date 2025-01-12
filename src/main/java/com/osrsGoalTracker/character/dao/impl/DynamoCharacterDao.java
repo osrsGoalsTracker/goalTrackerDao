@@ -1,7 +1,6 @@
 package com.osrsGoalTracker.character.dao.impl;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,12 +27,10 @@ public class DynamoCharacterDao implements CharacterDao {
     private static final String PK = "pk";
     private static final String SK = "sk";
     private static final String USER_PREFIX = "USER#";
-
+    private static final String USER_ID = "userId";
     private static final String NAME = "name";
     private static final String CREATED_AT = "createdAt";
     private static final String UPDATED_AT = "updatedAt";
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     private final DynamoDbClient dynamoDbClient;
     private final String tableName;
@@ -60,13 +57,14 @@ public class DynamoCharacterDao implements CharacterDao {
         }
     }
 
-    private Map<String, AttributeValue> createNewCharacterItem(String userId, String characterName, String timestamp) {
+    private Map<String, AttributeValue> createNewCharacterItem(String userId, String characterName, Instant timestamp) {
         Map<String, AttributeValue> item = new LinkedHashMap<>();
         item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
         item.put(SK, AttributeValue.builder().s(SortKeyUtil.getCharacterMetadataSortKey(characterName)).build());
         item.put(NAME, AttributeValue.builder().s(characterName).build());
-        item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
-        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
+        item.put(USER_ID, AttributeValue.builder().s(userId).build());
+        item.put(CREATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
+        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
         return item;
     }
 
@@ -83,10 +81,9 @@ public class DynamoCharacterDao implements CharacterDao {
 
         validateAddCharacterToUserInput(userId, characterName);
 
-        LocalDateTime now = LocalDateTime.now();
-        String timestamp = now.format(DATE_TIME_FORMATTER);
+        Instant now = Instant.now();
 
-        Map<String, AttributeValue> item = createNewCharacterItem(userId, characterName, timestamp);
+        Map<String, AttributeValue> item = createNewCharacterItem(userId, characterName, now);
 
         PutItemRequest putItemRequest = PutItemRequest.builder()
                 .tableName(tableName)
@@ -136,10 +133,10 @@ public class DynamoCharacterDao implements CharacterDao {
 
         List<CharacterEntity> characters = response.items().stream()
                 .map(item -> CharacterEntity.builder()
-                        .userId(userId)
+                        .userId(item.get(USER_ID).s())
                         .name(item.get(NAME).s())
-                        .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
-                        .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
+                        .createdAt(Instant.parse(item.get(CREATED_AT).s()))
+                        .updatedAt(Instant.parse(item.get(UPDATED_AT).s()))
                         .build())
                 .collect(Collectors.toList());
 

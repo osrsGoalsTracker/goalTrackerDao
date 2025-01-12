@@ -1,5 +1,7 @@
 package com.osrsGoalTracker.shared.dao.util;
 
+import java.time.Instant;
+
 /**
  * Utility class for generating sort keys for DynamoDB items.
  */
@@ -72,7 +74,6 @@ public final class SortKeyUtil {
         return String.format("%s#%s", NOTIFICATION, channelType);
     }
 
-
     /**
      * Gets the sort key for character metadata.
      *
@@ -81,5 +82,54 @@ public final class SortKeyUtil {
      */
     public static String getCharacterMetadataSortKey(String characterName) {
         return String.format("%s#%s#%s", CHARACTER, METADATA, characterName);
+    }
+
+    /**
+     * Builds the sort key for a goal's metadata record.
+     * Format: CHARACTER#character_name#GOAL#METADATA#goal_id
+     *
+     * @param characterName The name of the character
+     * @param goalId        The ID of the goal
+     * @return The sort key for the goal's metadata record
+     */
+    public static String buildGoalMetadataSortKey(String characterName, String goalId) {
+        return String.format("CHARACTER#%s#GOAL#METADATA#%s", characterName, goalId);
+    }
+
+    /**
+     * Builds the sort key for a goal's earliest progress record.
+     * Format: CHARACTER#character_name#GOAL#goal_id#EARLIEST
+     *
+     * @param characterName The name of the character
+     * @param goalId        The ID of the goal
+     * @return The sort key for the goal's earliest progress record
+     */
+    public static String buildGoalEarliestSortKey(String characterName, String goalId) {
+        return String.format("CHARACTER#%s#GOAL#%s#EARLIEST", characterName, goalId);
+    }
+
+    /**
+     * Builds the sort key for a goal progress record.
+     * Format: CHARACTER#character_name#GOAL#goal_id#timestamp
+     *
+     * @param characterName The name of the character
+     * @param goalId        The ID of the goal
+     * @param timestamp     The timestamp of the progress record
+     * @return The sort key for the goal progress record
+     */
+    public static String buildGoalProgressSortKey(String characterName, String goalId, Instant timestamp) {
+        return String.format("CHARACTER#%s#GOAL#%s#%s", characterName, goalId, timestamp.toString());
+    }
+
+    /**
+     * Builds the sort key for a goal's latest progress record.
+     * Format: CHARACTER#character_name#GOAL#goal_id#LATEST
+     *
+     * @param characterName The name of the character
+     * @param goalId        The ID of the goal
+     * @return The sort key for the goal's latest progress record
+     */
+    public static String buildGoalLatestSortKey(String characterName, String goalId) {
+        return String.format("CHARACTER#%s#GOAL#%s#LATEST", characterName, goalId);
     }
 }

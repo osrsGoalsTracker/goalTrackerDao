@@ -80,6 +80,9 @@ This schema is designed to support a goal tracking and notification platform for
      {
        "PK": "USER#12345",
        "SK": "CHARACTER#Character123#GOAL#METADATA#a4cae247-df47-45ec-a16d-5c51ec16fe23",
+       "userId": "12345",
+       "characterName": "Character123",
+       "goalId": "a4cae247-df47-45ec-a16d-5c51ec16fe23",
        "targetAttribute": "Woodcutting",
        "targetType": "xp",
        "targetValue": 13034431,
@@ -99,6 +102,9 @@ This schema is designed to support a goal tracking and notification platform for
      {
        "PK": "USER#12345",
        "SK": "CHARACTER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#2025-01-01T00:00:00Z",
+       "userId": "12345",
+       "characterName": "Character123",
+       "goalId": "a4cae247-df47-45ec-a16d-5c51ec16fe23",
        "progressValue": 12000000,
        "timestamp": "2025-01-01T00:00:00Z",
        "createdAt": "2025-01-01T00:00:00Z",
@@ -114,6 +120,9 @@ This schema is designed to support a goal tracking and notification platform for
      {
        "PK": "USER#12345",
        "SK": "CHARACTER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#LATEST",
+       "userId": "12345",
+       "characterName": "Character123",
+       "goalId": "a4cae247-df47-45ec-a16d-5c51ec16fe23",
        "progressValue": 12500000,
        "timestamp": "2025-01-02T00:00:00Z",
        "createdAt": "2025-01-02T00:00:00Z",
@@ -129,6 +138,9 @@ This schema is designed to support a goal tracking and notification platform for
      {
        "PK": "USER#12345",
        "SK": "CHARACTER#Character123#GOAL#a4cae247-df47-45ec-a16d-5c51ec16fe23#EARLIEST",
+       "userId": "12345",
+       "characterName": "Character123",
+       "goalId": "a4cae247-df47-45ec-a16d-5c51ec16fe23",
        "timestamp": "2025-01-01T00:00:00Z",
        "createdAt": "2025-01-01T00:00:00Z",
        "updatedAt": "2025-01-01T00:00:00Z"

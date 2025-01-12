@@ -1,6 +1,6 @@
-# OSRS Goal Tracker DAO
+# OSRS Goal Tracker DAO Library
 
-A Java library for managing RuneScape character goals and progress tracking in DynamoDB.
+This library provides data access objects (DAOs) for interacting with the OSRS Goal Tracker DynamoDB database.
 
 ## Installation
 
@@ -12,11 +12,49 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.yourusername:osrsGoalTracker:VERSION'
+    implementation 'com.github.osrsGoalsTracker:goalTrackerDao:1.0-SNAPSHOT'
 }
 ```
 
 ## Usage
+
+### Goal Management
+
+```java
+import com.osrsGoalTracker.goal.dao.GoalDao;
+import com.osrsGoalTracker.goal.dao.entity.GoalEntity;
+import java.time.LocalDate;
+
+// Create a new GoalEntity
+GoalEntity goal = GoalEntity.builder()
+    .userId("userId")
+    .characterName("MyCharacter")
+    .targetAttribute("Woodcutting")
+    .targetType("xp")
+    .targetValue(13034431L)
+    .targetDate(LocalDate.of(2025, 3, 1))
+    .notificationChannelType("SMS")
+    .frequency("daily")
+    .build();
+
+// Create goal with initial progress value
+GoalEntity createdGoal = goalDao.createGoal(goal, 1000L);
+
+// the interface is `GoalEntity createGoal(GoalEntity goalEntity, long currentValue);`
+```
+
+The `GoalEntity` class has the following fields:
+- `userId` (String): The ID of the user who owns the goal
+- `characterName` (String): The name of the character this goal is for
+- `goalId` (String): The unique identifier for the goal (generated on creation)
+- `targetAttribute` (String): The skill or activity being tracked
+- `targetType` (String): The type of target (e.g., "xp", "level", etc.)
+- `targetValue` (Long): The target value to achieve
+- `targetDate` (LocalDate): The date by which to achieve the goal
+- `notificationChannelType` (String): The type of notification channel to use
+- `frequency` (String): How often to check/notify about progress
+- `createdAt` (Instant): When the goal was created
+- `updatedAt` (Instant): When the goal was last updated
 
 ### User Management
 

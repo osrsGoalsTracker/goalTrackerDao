@@ -6,8 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -33,7 +32,6 @@ class DynamoCharacterDaoTest {
     private static final String TABLE_NAME = "test-table";
     private static final String TEST_USER_ID = "test-user-id";
     private static final String TEST_CHARACTER_NAME = "test-character";
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     @Mock
     private DynamoDbClient dynamoDbClient;
@@ -72,48 +70,21 @@ class DynamoCharacterDaoTest {
     }
 
     @Test
-    void testAddCharacterToUserWithNullUserIdThrowsIllegalArgumentException() {
-        assertThatThrownBy(() -> dynamoCharacterDao.addCharacterToUser(null, TEST_CHARACTER_NAME))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("UserId cannot be null or empty");
-    }
-
-    @Test
-    void testAddCharacterToUserWithEmptyUserIdThrowsIllegalArgumentException() {
-        assertThatThrownBy(() -> dynamoCharacterDao.addCharacterToUser("  ", TEST_CHARACTER_NAME))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("UserId cannot be null or empty");
-    }
-
-    @Test
-    void testAddCharacterToUserWithNullCharacterNameThrowsIllegalArgumentException() {
-        assertThatThrownBy(() -> dynamoCharacterDao.addCharacterToUser(TEST_USER_ID, null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Character name cannot be null or empty");
-    }
-
-    @Test
-    void testAddCharacterToUserWithEmptyCharacterNameThrowsIllegalArgumentException() {
-        assertThatThrownBy(() -> dynamoCharacterDao.addCharacterToUser(TEST_USER_ID, "  "))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Character name cannot be null or empty");
-    }
-
-    @Test
     void testGetCharactersForUserWithValidUserIdReturnsCharacters() {
         // Given
-        LocalDateTime now = LocalDateTime.now();
-        String timestamp = now.format(DATE_TIME_FORMATTER);
+        Instant now = Instant.now();
 
         Map<String, AttributeValue> character1 = Map.of(
+                "userId", AttributeValue.builder().s(TEST_USER_ID).build(),
                 "name", AttributeValue.builder().s(TEST_CHARACTER_NAME).build(),
-                "createdAt", AttributeValue.builder().s(timestamp).build(),
-                "updatedAt", AttributeValue.builder().s(timestamp).build());
+                "createdAt", AttributeValue.builder().s(now.toString()).build(),
+                "updatedAt", AttributeValue.builder().s(now.toString()).build());
 
         Map<String, AttributeValue> character2 = Map.of(
+                "userId", AttributeValue.builder().s(TEST_USER_ID).build(),
                 "name", AttributeValue.builder().s("another-character").build(),
-                "createdAt", AttributeValue.builder().s(timestamp).build(),
-                "updatedAt", AttributeValue.builder().s(timestamp).build());
+                "createdAt", AttributeValue.builder().s(now.toString()).build(),
+                "updatedAt", AttributeValue.builder().s(now.toString()).build());
 
         when(dynamoDbClient.query(any(QueryRequest.class)))
                 .thenReturn(QueryResponse.builder().items(Arrays.asList(character1, character2)).build());
@@ -140,6 +111,34 @@ class DynamoCharacterDaoTest {
         assertThat(secondCharacter.getName()).isEqualTo("another-character");
         assertThat(secondCharacter.getCreatedAt()).isEqualTo(now);
         assertThat(secondCharacter.getUpdatedAt()).isEqualTo(now);
+    }
+
+    @Test
+    void testAddCharacterToUserWithNullUserIdThrowsIllegalArgumentException() {
+        assertThatThrownBy(() -> dynamoCharacterDao.addCharacterToUser(null, TEST_CHARACTER_NAME))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("UserId cannot be null or empty");
+    }
+
+    @Test
+    void testAddCharacterToUserWithEmptyUserIdThrowsIllegalArgumentException() {
+        assertThatThrownBy(() -> dynamoCharacterDao.addCharacterToUser("  ", TEST_CHARACTER_NAME))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("UserId cannot be null or empty");
+    }
+
+    @Test
+    void testAddCharacterToUserWithNullCharacterNameThrowsIllegalArgumentException() {
+        assertThatThrownBy(() -> dynamoCharacterDao.addCharacterToUser(TEST_USER_ID, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Character name cannot be null or empty");
+    }
+
+    @Test
+    void testAddCharacterToUserWithEmptyCharacterNameThrowsIllegalArgumentException() {
+        assertThatThrownBy(() -> dynamoCharacterDao.addCharacterToUser(TEST_USER_ID, "  "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Character name cannot be null or empty");
     }
 
     @Test

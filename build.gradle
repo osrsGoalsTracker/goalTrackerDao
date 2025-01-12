@@ -22,6 +22,7 @@ dependencies {
     // AWS DynamoDB
     implementation platform('software.amazon.awssdk:bom:2.24.0')
     implementation 'software.amazon.awssdk:dynamodb'
+    implementation 'software.amazon.awssdk:dynamodb-enhanced'
     
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.30'
@@ -53,7 +54,7 @@ testing {
 
 checkstyle {
     toolVersion = '10.13.0'
-    config = resources.text.fromUri("https://raw.githubusercontent.com/osrsGoalsTracker/java-build-config/refs/heads/main/checkstyle/checkstyle.xml")
+    config = resources.text.fromUri(uri("https://raw.githubusercontent.com/osrsGoalsTracker/java-build-config/refs/heads/main/checkstyle/checkstyle.xml"))
     maxWarnings = 0
     ignoreFailures = false
 }

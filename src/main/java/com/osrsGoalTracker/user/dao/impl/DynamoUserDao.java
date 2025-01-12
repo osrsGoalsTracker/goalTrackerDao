@@ -1,13 +1,12 @@
 package com.osrsGoalTracker.user.dao.impl;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.osrsGoalTracker.shared.dao.util.SortKeyUtil;
 import com.osrsGoalTracker.shared.dao.exception.ResourceNotFoundException;
+import com.osrsGoalTracker.shared.dao.util.SortKeyUtil;
 import com.osrsGoalTracker.user.dao.UserDao;
 import com.osrsGoalTracker.user.dao.entity.UserEntity;
 import com.osrsGoalTracker.user.dao.exception.DuplicateUserException;
@@ -36,8 +35,6 @@ public class DynamoUserDao implements UserDao {
     private static final String EMAIL = "email";
     private static final String CREATED_AT = "createdAt";
     private static final String UPDATED_AT = "updatedAt";
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     private final DynamoDbClient dynamoDbClient;
     private final String tableName;
@@ -88,14 +85,14 @@ public class DynamoUserDao implements UserDao {
         return UUID.randomUUID().toString();
     }
 
-    private Map<String, AttributeValue> createNewUserItem(String userId, String email, String timestamp) {
+    private Map<String, AttributeValue> createNewUserItem(String userId, String email, Instant timestamp) {
         Map<String, AttributeValue> item = new LinkedHashMap<>();
         item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
         item.put(SK, AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
         item.put(ID, AttributeValue.builder().s(userId).build());
         item.put(EMAIL, AttributeValue.builder().s(email).build());
-        item.put(CREATED_AT, AttributeValue.builder().s(timestamp).build());
-        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp).build());
+        item.put(CREATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
+        item.put(UPDATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
         return item;
     }
 
@@ -121,10 +118,9 @@ public class DynamoUserDao implements UserDao {
         }
 
         String newUserId = generateNewUserId();
-        LocalDateTime now = LocalDateTime.now();
-        String timestamp = now.format(DATE_TIME_FORMATTER);
+        Instant now = Instant.now();
 
-        Map<String, AttributeValue> item = createNewUserItem(newUserId, user.getEmail(), timestamp);
+        Map<String, AttributeValue> item = createNewUserItem(newUserId, user.getEmail(), now);
 
         try {
             PutItemRequest putItemRequest = PutItemRequest.builder()
@@ -168,33 +164,29 @@ public class DynamoUserDao implements UserDao {
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
 
-        String pk = USER_PREFIX + userId;
-        String sk = SortKeyUtil.getUserMetadataSortKey();
-
         Map<String, AttributeValue> key = new LinkedHashMap<>();
-        key.put(PK, AttributeValue.builder().s(pk).build());
-        key.put(SK, AttributeValue.builder().s(sk).build());
+        key.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
+        key.put(SK, AttributeValue.builder().s(SortKeyUtil.getUserMetadataSortKey()).build());
 
-        GetItemRequest request = GetItemRequest.builder()
+        GetItemRequest getItemRequest = GetItemRequest.builder()
                 .tableName(tableName)
                 .key(key)
                 .build();
 
-        GetItemResponse response = dynamoDbClient.getItem(request);
+        log.debug("Getting user item from DynamoDB with ID: {}", userId);
+        GetItemResponse response = dynamoDbClient.getItem(getItemRequest);
+
         if (!response.hasItem()) {
             log.warn("User not found with ID: {}", userId);
             throw new ResourceNotFoundException("User not found with ID: " + userId);
         }
 
         Map<String, AttributeValue> item = response.item();
-        UserEntity user = UserEntity.builder()
+        return UserEntity.builder()
                 .userId(item.get(ID).s())
                 .email(item.get(EMAIL).s())
-                .createdAt(LocalDateTime.parse(item.get(CREATED_AT).s(), DATE_TIME_FORMATTER))
-                .updatedAt(LocalDateTime.parse(item.get(UPDATED_AT).s(), DATE_TIME_FORMATTER))
+                .createdAt(Instant.parse(item.get(CREATED_AT).s()))
+                .updatedAt(Instant.parse(item.get(UPDATED_AT).s()))
                 .build();
-
-        log.debug("Successfully retrieved user: {}", user);
-        return user;
     }
 }

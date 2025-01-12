@@ -6,8 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ class DynamoNotificationChannelDaoTest {
     private static final String TEST_USER_ID = "test-user-id";
     private static final String TEST_CHANNEL_TYPE = "DISCORD";
     private static final String TEST_IDENTIFIER = "test-identifier";
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     @Mock
     private DynamoDbClient dynamoDbClient;
@@ -101,7 +99,7 @@ class DynamoNotificationChannelDaoTest {
     void testCreateNotificationChannelWithNullChannelThrowsIllegalArgumentException() {
         assertThatThrownBy(() -> dynamoNotificationChannelDao.createNotificationChannel(TEST_USER_ID, null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Notification channel entity cannot be null");
+                .hasMessageContaining("Notification channel cannot be null");
     }
 
     @Test
@@ -131,22 +129,23 @@ class DynamoNotificationChannelDaoTest {
     @Test
     void testGetNotificationChannelsWithValidUserIdReturnsChannels() {
         // Given
-        LocalDateTime now = LocalDateTime.now();
-        String timestamp = now.format(DATE_TIME_FORMATTER);
+        Instant now = Instant.now();
 
         Map<String, AttributeValue> channel1 = Map.of(
+                "userId", AttributeValue.builder().s(TEST_USER_ID).build(),
                 "channelType", AttributeValue.builder().s(TEST_CHANNEL_TYPE).build(),
                 "identifier", AttributeValue.builder().s(TEST_IDENTIFIER).build(),
                 "isActive", AttributeValue.builder().bool(true).build(),
-                "createdAt", AttributeValue.builder().s(timestamp).build(),
-                "updatedAt", AttributeValue.builder().s(timestamp).build());
+                "createdAt", AttributeValue.builder().s(now.toString()).build(),
+                "updatedAt", AttributeValue.builder().s(now.toString()).build());
 
         Map<String, AttributeValue> channel2 = Map.of(
+                "userId", AttributeValue.builder().s(TEST_USER_ID).build(),
                 "channelType", AttributeValue.builder().s("SMS").build(),
                 "identifier", AttributeValue.builder().s("1234567890").build(),
                 "isActive", AttributeValue.builder().bool(false).build(),
-                "createdAt", AttributeValue.builder().s(timestamp).build(),
-                "updatedAt", AttributeValue.builder().s(timestamp).build());
+                "createdAt", AttributeValue.builder().s(now.toString()).build(),
+                "updatedAt", AttributeValue.builder().s(now.toString()).build());
 
         when(dynamoDbClient.query(any(QueryRequest.class)))
                 .thenReturn(QueryResponse.builder().items(Arrays.asList(channel1, channel2)).build());
