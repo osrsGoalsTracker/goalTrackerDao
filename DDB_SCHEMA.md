@@ -74,17 +74,17 @@ This schema is designed to support a goal tracking and notification platform for
 
 #### 4. **Goal Metadata**
    - **Sort Key:** `CHARACTER#<character_name>#GOAL#METADATA#<goal_id>`
-   - **Purpose:** This is the metadata for the goal. It is used to store information about the goal such as the character name, skill/activity, targetXp, targetDate, notificationChannels, frequency, createdAt, and updatedAt.
+   - **Purpose:** This is the metadata for the goal. It is used to store information about the goal such as the character name, skill/activity, targetXp, targetDate, notificationChannel, frequency, createdAt, and updatedAt.
    - **Example Item:**
      ```json
      {
        "PK": "USER#12345",
        "SK": "CHARACTER#Character123#GOAL#METADATA#a4cae247-df47-45ec-a16d-5c51ec16fe23",
-       "skill": "Woodcutting",
+       "targetAttribute": "Woodcutting",
        "targetType": "xp",
        "targetValue": 13034431,
        "targetDate": "2025-03-01",
-       "notificationChannels": ["SMS", "Discord"],
+       "notificationChannelType": "SMS",
        "frequency": "daily",
        "createdAt": "2025-01-01T00:00:00Z",
        "updatedAt": "2025-01-01T00:00:00Z"
