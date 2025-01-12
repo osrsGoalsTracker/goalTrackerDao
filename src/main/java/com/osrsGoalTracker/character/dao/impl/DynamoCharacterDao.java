@@ -28,7 +28,7 @@ public class DynamoCharacterDao implements CharacterDao {
     private static final String SK = "sk";
     private static final String USER_PREFIX = "USER#";
     private static final String USER_ID = "userId";
-    private static final String NAME = "name";
+    private static final String CHARACTER_NAME = "characterName";
     private static final String CREATED_AT = "createdAt";
     private static final String UPDATED_AT = "updatedAt";
 
@@ -61,7 +61,7 @@ public class DynamoCharacterDao implements CharacterDao {
         Map<String, AttributeValue> item = new LinkedHashMap<>();
         item.put(PK, AttributeValue.builder().s(USER_PREFIX + userId).build());
         item.put(SK, AttributeValue.builder().s(SortKeyUtil.getCharacterMetadataSortKey(characterName)).build());
-        item.put(NAME, AttributeValue.builder().s(characterName).build());
+        item.put(CHARACTER_NAME, AttributeValue.builder().s(characterName).build());
         item.put(USER_ID, AttributeValue.builder().s(userId).build());
         item.put(CREATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
         item.put(UPDATED_AT, AttributeValue.builder().s(timestamp.toString()).build());
@@ -134,7 +134,7 @@ public class DynamoCharacterDao implements CharacterDao {
         List<CharacterEntity> characters = response.items().stream()
                 .map(item -> CharacterEntity.builder()
                         .userId(item.get(USER_ID).s())
-                        .name(item.get(NAME).s())
+                        .name(item.get(CHARACTER_NAME).s())
                         .createdAt(Instant.parse(item.get(CREATED_AT).s()))
                         .updatedAt(Instant.parse(item.get(UPDATED_AT).s()))
                         .build())

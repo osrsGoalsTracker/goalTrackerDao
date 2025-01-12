@@ -7,6 +7,8 @@ import java.util.UUID;
 import com.google.inject.Inject;
 import com.osrsGoalTracker.goal.dao.GoalDao;
 import com.osrsGoalTracker.goal.dao.entity.GoalEntity;
+import com.osrsGoalTracker.goal.dao.impl.DynamoItem.DynamoGoalMetadataItem;
+import com.osrsGoalTracker.goal.dao.impl.DynamoItem.DynamoGoalProgressItem;
 import com.osrsGoalTracker.shared.dao.util.SortKeyUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -79,7 +81,6 @@ public class DynamoGoalDao implements GoalDao {
                 .characterName(characterName)
                 .goalId(goalId)
                 .progressValue(currentValue)
-                .timestamp(timestamp)
                 .createdAt(timestamp)
                 .build();
     }

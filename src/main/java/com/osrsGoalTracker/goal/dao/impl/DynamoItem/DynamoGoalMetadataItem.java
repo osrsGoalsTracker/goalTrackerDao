@@ -1,4 +1,4 @@
-package com.osrsGoalTracker.goal.dao.impl;
+package com.osrsGoalTracker.goal.dao.impl.DynamoItem;
 
 import java.time.Instant;
 
@@ -12,21 +12,25 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 /**
- * Represents a goal progress record in the DynamoDB table.
+ * Represents a goal metadata record in the DynamoDB table.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamoDbBean
-public class DynamoGoalProgressItem {
+public class DynamoGoalMetadataItem {
     private String pk;
     private String sk;
     private String userId;
     private String characterName;
     private String goalId;
-    private Long progressValue;
-    private Instant timestamp;
+    private String targetAttribute;
+    private String targetType;
+    private Long targetValue;
+    private Instant targetDate;
+    private String notificationChannelType;
+    private String frequency;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -55,14 +59,34 @@ public class DynamoGoalProgressItem {
         return goalId;
     }
 
-    @DynamoDbAttribute("progressValue")
-    public Long getProgressValue() {
-        return progressValue;
+    @DynamoDbAttribute("targetAttribute")
+    public String getTargetAttribute() {
+        return targetAttribute;
     }
 
-    @DynamoDbAttribute("timestamp")
-    public Instant getTimestamp() {
-        return timestamp;
+    @DynamoDbAttribute("targetType")
+    public String getTargetType() {
+        return targetType;
+    }
+
+    @DynamoDbAttribute("targetValue")
+    public Long getTargetValue() {
+        return targetValue;
+    }
+
+    @DynamoDbAttribute("targetDate")
+    public Instant getTargetDate() {
+        return targetDate;
+    }
+
+    @DynamoDbAttribute("notificationChannelType")
+    public String getNotificationChannelType() {
+        return notificationChannelType;
+    }
+
+    @DynamoDbAttribute("frequency")
+    public String getFrequency() {
+        return frequency;
     }
 
     @DynamoDbAttribute("createdAt")

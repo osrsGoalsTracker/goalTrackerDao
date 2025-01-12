@@ -18,5 +18,5 @@ public class GoalProgressEntity extends AbstractEntity {
     private String characterName;
     private String goalId;
     private Long progressValue;
-    private Instant timestamp;
+    private Instant createdAt;
 }

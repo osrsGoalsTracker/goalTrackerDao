@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 
 import com.osrsGoalTracker.goal.dao.entity.GoalEntity;
+import com.osrsGoalTracker.goal.dao.impl.DynamoItem.DynamoGoalMetadataItem;
+import com.osrsGoalTracker.goal.dao.impl.DynamoItem.DynamoGoalProgressItem;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

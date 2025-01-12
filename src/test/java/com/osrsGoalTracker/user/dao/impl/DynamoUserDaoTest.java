@@ -149,7 +149,7 @@ class DynamoUserDaoTest {
         Instant now = Instant.now();
 
         Map<String, AttributeValue> item = Map.of(
-                "id", AttributeValue.builder().s(TEST_USER_ID).build(),
+                "userId", AttributeValue.builder().s(TEST_USER_ID).build(),
                 "email", AttributeValue.builder().s(TEST_EMAIL).build(),
                 "createdAt", AttributeValue.builder().s(now.toString()).build(),
                 "updatedAt", AttributeValue.builder().s(now.toString()).build());

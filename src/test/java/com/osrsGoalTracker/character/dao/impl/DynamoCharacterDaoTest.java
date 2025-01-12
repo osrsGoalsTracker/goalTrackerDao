@@ -60,7 +60,7 @@ class DynamoCharacterDaoTest {
         assertThat(putRequest.tableName()).isEqualTo(TABLE_NAME);
 
         Map<String, AttributeValue> item = putRequest.item();
-        assertThat(item.get("name").s()).isEqualTo(TEST_CHARACTER_NAME);
+        assertThat(item.get("characterName").s()).isEqualTo(TEST_CHARACTER_NAME);
         assertThat(item.get("sk").s()).isEqualTo(SortKeyUtil.getCharacterMetadataSortKey(TEST_CHARACTER_NAME));
 
         assertThat(createdCharacter.getUserId()).isEqualTo(TEST_USER_ID);
@@ -76,13 +76,13 @@ class DynamoCharacterDaoTest {
 
         Map<String, AttributeValue> character1 = Map.of(
                 "userId", AttributeValue.builder().s(TEST_USER_ID).build(),
-                "name", AttributeValue.builder().s(TEST_CHARACTER_NAME).build(),
+                "characterName", AttributeValue.builder().s(TEST_CHARACTER_NAME).build(),
                 "createdAt", AttributeValue.builder().s(now.toString()).build(),
                 "updatedAt", AttributeValue.builder().s(now.toString()).build());
 
         Map<String, AttributeValue> character2 = Map.of(
                 "userId", AttributeValue.builder().s(TEST_USER_ID).build(),
-                "name", AttributeValue.builder().s("another-character").build(),
+                "characterName", AttributeValue.builder().s("another-character").build(),
                 "createdAt", AttributeValue.builder().s(now.toString()).build(),
                 "updatedAt", AttributeValue.builder().s(now.toString()).build());
 
